@@ -20,20 +20,33 @@ body.overlay{
   filter: drop-shadow(0 10px 20px rgba(0,0,0,.35));
   border-radius: 14px;
 
-  /* ✅ “Запас” фона для OBS (примерно 1 см) */
+  /* ✅ “запас” для захвата в OBS */
   --bgPad: 40px;
   padding: var(--bgPad);
+
+  /* важно: чтобы подложка через ::before работала корректно */
+  isolation: isolate;
 }
 
-/* фон HUD (для OBS хромакей) */
-.hud.bg-transparent{ background: transparent; }
-.hud.bg-black{ background: rgba(0,0,0,.55); }
-.hud.bg-white{ background: rgba(255,255,255,.85); }
-.hud.bg-chroma-green{ background: #00ff00; }
-.hud.bg-chroma-purple{ background: #ff00ff; }
-.hud.bg-blue{ background: #0066ff; }
-.hud.bg-red{ background: #ff0033; }
-.hud.bg-yellow{ background: #ffd400; }
+/* ✅ Подложка фона, которая покрывает и padding */
+.hud::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius: 14px;
+  z-index: -1;
+  background: var(--hudBg, transparent);
+}
+
+/* выставляем переменную фона */
+.hud.bg-transparent{ --hudBg: transparent; }
+.hud.bg-black{ --hudBg: rgba(0,0,0,.55); }
+.hud.bg-white{ --hudBg: rgba(255,255,255,.85); }
+.hud.bg-chroma-green{ --hudBg: #00ff00; }
+.hud.bg-chroma-purple{ --hudBg: #ff00ff; }
+.hud.bg-blue{ --hudBg: #0066ff; }
+.hud.bg-red{ --hudBg: #ff0033; }
+.hud.bg-yellow{ --hudBg: #ffd400; }
 
 .row{
   display: inline-flex;
@@ -45,7 +58,7 @@ body.overlay{
   border: 1px solid rgba(255,255,255,.14);
   border-radius: 12px;
   padding: 10px 12px;
-  max-width: calc(95vw - (2 * var(--bgPad))); /* чтобы не вылезало за экран */
+  max-width: calc(95vw - (2 * var(--bgPad)));
 }
 
 .team{
@@ -55,12 +68,12 @@ body.overlay{
   text-transform: uppercase;
   font-size: 16px;
 
-  /* ✅ Растягиваем плашку под длинное название */
+  /* растягиваем под длинное имя */
   width: max-content;
-  max-width: calc(95vw - (2 * var(--bgPad)) - 170px); /* место под score */
+  max-width: calc(95vw - (2 * var(--bgPad)) - 86px); /* место под 1 box + gap */
   white-space: nowrap;
-  overflow: visible; /* было hidden */
-  text-overflow: clip; /* было ellipsis */
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .score{
@@ -70,8 +83,8 @@ body.overlay{
 }
 
 .box{
-  width: 46px;
-  height: 34px;
+  width: 54px;
+  height: 36px;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -105,7 +118,11 @@ body.overlay{
 .hud.pos-bl{ bottom:24px; left:24px; top:auto; right:auto; position:absolute; }
 .hud.pos-br{ bottom:24px; right:24px; top:auto; left:auto; position:absolute; }
 
-/* ===================== ADMIN ===================== */
+@media (max-width: 860px){
+  .hud{ --bgPad: 28px; }
+}
+
+/* ===================== ADMIN (оставляем как было, не трогаем) ===================== */
 body.admin{
   margin:0;
   background:#0b0d12;
@@ -260,6 +277,4 @@ button.danger{ border-color: rgba(255, 90, 90, .55); }
   .span2{ grid-column: auto; }
   .teamRow{ grid-template-columns: 1fr 52px 1fr 52px; }
   .teamRowTitle{ grid-column: 1 / -1; }
-
-  .hud{ --bgPad: 28px; } /* на мобиле чуть меньше */
 }
