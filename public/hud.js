@@ -35,15 +35,7 @@ function setBg(bg) {
   hud.classList.add(map[bg] || "bg-transparent");
 }
 
-function calcTeamWidth(nameA, nameB) {
-  const clean = (s) => String(s || "").replace(/\s+/g, "");
-  const maxLen = Math.max(clean(nameA).length, clean(nameB).length, 4);
-  const px = 12 + maxLen * 9 + 18;
-  return Math.max(140, Math.min(px, 360));
-}
-
 function updateMetaTournament(s) {
-  // показываем только в tournament режиме
   if ((s.mode ?? "tournament") !== "tournament") {
     meta.style.display = "none";
     meta.textContent = "";
@@ -68,11 +60,8 @@ function updateMetaTournament(s) {
 }
 
 socket.on("state", (s) => {
-  const aName = s.teamA ?? "TEAM A";
-  const bName = s.teamB ?? "TEAM B";
-
-  $("teamA").textContent = aName;
-  $("teamB").textContent = bName;
+  $("teamA").textContent = s.teamA ?? "TEAM A";
+  $("teamB").textContent = s.teamB ?? "TEAM B";
 
   $("a1").textContent = String(s.a1 ?? 0);
   $("a2").textContent = String(s.a2 ?? 0);
@@ -84,9 +73,6 @@ socket.on("state", (s) => {
 
   setPos(s.hudPosition);
   setBg(s.hudBg);
-
-  const teamW = calcTeamWidth(aName, bName);
-  hud.style.setProperty("--teamW", `${teamW}px`);
 
   updateMetaTournament(s);
 });

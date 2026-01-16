@@ -19,7 +19,10 @@ body.overlay{
 
   filter: drop-shadow(0 10px 20px rgba(0,0,0,.35));
   border-radius: 14px;
-  padding: 0;
+
+  /* ✅ “Запас” фона для OBS (примерно 1 см) */
+  --bgPad: 40px;
+  padding: var(--bgPad);
 }
 
 /* фон HUD (для OBS хромакей) */
@@ -42,6 +45,7 @@ body.overlay{
   border: 1px solid rgba(255,255,255,.14);
   border-radius: 12px;
   padding: 10px 12px;
+  max-width: calc(95vw - (2 * var(--bgPad))); /* чтобы не вылезало за экран */
 }
 
 .team{
@@ -51,10 +55,12 @@ body.overlay{
   text-transform: uppercase;
   font-size: 16px;
 
-  width: var(--teamW, 220px);
+  /* ✅ Растягиваем плашку под длинное название */
+  width: max-content;
+  max-width: calc(95vw - (2 * var(--bgPad)) - 170px); /* место под score */
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow: visible; /* было hidden */
+  text-overflow: clip; /* было ellipsis */
 }
 
 .score{
@@ -89,6 +95,8 @@ body.overlay{
   font-size: 12px;
   font-weight: 600;
   letter-spacing: .2px;
+
+  max-width: calc(95vw - (2 * var(--bgPad)));
 }
 
 /* позиции HUD */
@@ -148,7 +156,6 @@ input, select{
   box-sizing: border-box;
 }
 
-/* форма сверху */
 .grid2{
   display:grid;
   grid-template-columns: 1fr 1fr;
@@ -156,7 +163,6 @@ input, select{
 }
 .span2{ grid-column: 1 / -1; }
 
-/* блок команд */
 .teamsPanel{
   margin-top: 14px;
   display:grid;
@@ -215,7 +221,6 @@ input, select{
   max-width: 45vw;
 }
 
-/* кнопки снизу */
 .rowBtns{
   margin-top: 14px;
   display:flex;
@@ -236,7 +241,6 @@ button{
 button.primary{ border-color: rgba(255,255,255,.25); }
 button.danger{ border-color: rgba(255, 90, 90, .55); }
 
-/* preview */
 .preview{
   margin-top: 14px;
 }
@@ -251,10 +255,11 @@ button.danger{ border-color: rgba(255, 90, 90, .55); }
   overflow: hidden;
 }
 
-/* адаптив */
 @media (max-width: 860px){
   .grid2{ grid-template-columns: 1fr; }
   .span2{ grid-column: auto; }
   .teamRow{ grid-template-columns: 1fr 52px 1fr 52px; }
   .teamRowTitle{ grid-column: 1 / -1; }
+
+  .hud{ --bgPad: 28px; } /* на мобиле чуть меньше */
 }
