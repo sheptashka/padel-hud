@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Padel HUD Admin</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body class="admin">
+  <div class="container">
+    <h1>Padel HUD — Админка</h1>
+
+    <div class="card">
+      <div class="grid">
+        <div>
+          <label>Команда A</label>
+          <input id="teamA" />
+        </div>
+        <div>
+          <label>Команда B</label>
+          <input id="teamB" />
+        </div>
+
+        <div>
+          <label>Режим счета</label>
+          <select id="mode">
+            <option value="classic">Классический (потом настроим логику)</option>
+            <option value="custom">Кастомный до N</option>
+          </select>
+        </div>
+        <div>
+          <label>До скольки (для custom)</label>
+          <input id="maxPoints" type="number" min="1" step="1" value="11" />
+        </div>
+
+        <div>
+          <label>Позиция HUD</label>
+          <select id="hudPosition">
+            <option value="tl">Сверху слева</option>
+            <option value="tr">Сверху справа</option>
+            <option value="bl">Снизу слева</option>
+            <option value="br">Снизу справа</option>
+          </select>
+        </div>
+        <div></div>
+
+        <div>
+          <label>A: значение 1</label>
+          <input id="a1" type="number" />
+        </div>
+        <div>
+          <label>B: значение 1</label>
+          <input id="b1" type="number" />
+        </div>
+
+        <div>
+          <label>A: значение 2</label>
+          <input id="a2" type="number" />
+        </div>
+        <div>
+          <label>B: значение 2</label>
+          <input id="b2" type="number" />
+        </div>
+
+        <div>
+          <label>A: значение 3</label>
+          <input id="a3" type="number" />
+        </div>
+        <div>
+          <label>B: значение 3</label>
+          <input id="b3" type="number" />
+        </div>
+      </div>
+
+      <div style="height:14px"></div>
+
+      <div class="rowBtns">
+        <button class="primary" id="apply">Применить</button>
+        <button id="aPlus">A +1 (value3)</button>
+        <button id="bPlus">B +1 (value3)</button>
+        <button class="danger" id="reset">Сбросить счет</button>
+      </div>
+
+      <div class="preview">
+        <label>Preview:</label>
+        <iframe src="/hud.html"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/admin.js"></script>
+</body>
+</html>

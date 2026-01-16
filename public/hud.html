@@ -7,26 +7,27 @@
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body class="overlay">
-  <div class="hud">
+  <div id="hud" class="hud pos-tl">
     <div class="row">
-      <div class="team">TEAM A</div>
+      <div class="team" id="teamA">TEAM A</div>
       <div class="score">
-        <div class="box">0</div>
-        <div class="box">0</div>
-        <div class="box">0</div>
+        <div class="box" id="a1">0</div>
+        <div class="box" id="a2">0</div>
+        <div class="box" id="a3">0</div>
       </div>
     </div>
 
     <div class="row">
-      <div class="team">TEAM B</div>
+      <div class="team" id="teamB">TEAM B</div>
       <div class="score">
-        <div class="box">0</div>
-        <div class="box">0</div>
-        <div class="box">0</div>
+        <div class="box" id="b1">0</div>
+        <div class="box" id="b2">0</div>
+        <div class="box" id="b3">0</div>
       </div>
     </div>
-
-    <div class="note">HUD is running ✅</div>
   </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/hud.js"></script>
 </body>
 </html>
