@@ -44,19 +44,19 @@ body.overlay{
 .hud.bg-red{ --hudBg: #ff0033; }
 .hud.bg-yellow{ --hudBg: #ffd400; }
 
-/* ✅ Одна ширина для обеих строк (JS ставит --rowW) */
 .row{
-  display: inline-flex;
-  align-items:center;
+  display: flex;
+  align-items: center;
   gap: 12px;
 
   background: #111315;
   border: 1px solid rgba(255,255,255,.14);
   border-radius: 12px;
 
-  padding: 10px 12px;
+  padding: 10px 14px;
 
-  width: var(--rowW, max-content);
+  /* 👇 ключевое */
+  width: var(--rowW, 100%);
   max-width: calc(95vw - (2 * var(--bgPad)));
   box-sizing: border-box;
 }
@@ -68,18 +68,25 @@ body.overlay{
   text-transform: uppercase;
   font-size: 16px;
 
-  flex: 0 1 auto;
-  max-width: calc(95vw - (2 * var(--bgPad)) - 86px);
+  /* 👇 занимает всё слева */
+  flex: 1 1 auto;
+  min-width: 0;
+
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
+
 .score{
+  /* 👇 ВСЕГДА прижимается вправо */
+  margin-left: auto;
+
   display: inline-flex;
   gap: 8px;
-  flex: 0 0 auto;
+  flex-shrink: 0;
 }
+
 
 .box{
   width: 54px;
@@ -95,6 +102,7 @@ body.overlay{
   color: rgba(255,255,255,.92);
   font-weight: 900;
 }
+
 
 .meta{
   margin-top: 2px;
