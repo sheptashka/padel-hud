@@ -20,15 +20,12 @@ body.overlay{
   filter: drop-shadow(0 10px 20px rgba(0,0,0,.35));
   border-radius: 14px;
 
-  /* ✅ “запас” для захвата в OBS */
   --bgPad: 40px;
   padding: var(--bgPad);
 
-  /* важно: чтобы подложка через ::before работала корректно */
   isolation: isolate;
 }
 
-/* ✅ Подложка фона, которая покрывает и padding */
 .hud::before{
   content:"";
   position:absolute;
@@ -38,7 +35,7 @@ body.overlay{
   background: var(--hudBg, transparent);
 }
 
-/* выставляем переменную фона */
+/* фон HUD (для OBS хромакей) */
 .hud.bg-transparent{ --hudBg: transparent; }
 .hud.bg-black{ --hudBg: rgba(0,0,0,.55); }
 .hud.bg-white{ --hudBg: rgba(255,255,255,.85); }
@@ -48,40 +45,48 @@ body.overlay{
 .hud.bg-red{ --hudBg: #ff0033; }
 .hud.bg-yellow{ --hudBg: #ffd400; }
 
+/* ✅ Плашка строки — делаем НЕпрозрачной, чтобы зелёный не просвечивал */
 .row{
-  display: inline-flex;
+  display: flex;
   align-items:center;
-  justify-content: flex-start;
   gap: 12px;
 
-  background: rgba(10,10,10,.78);
+  /* важное: непрозрачный фон */
+  background: #111315;
   border: 1px solid rgba(255,255,255,.14);
   border-radius: 12px;
+
   padding: 10px 12px;
-  max-width: calc(95vw - (2 * var(--bgPad)));
+
+  /* ✅ фиксируем ширину строки, чтобы “правый край” был стабильный */
+  width: min(620px, calc(95vw - (2 * var(--bgPad))));
+  box-sizing: border-box;
 }
 
+/* ✅ Название слева, занимает всё свободное место */
 .team{
   color: rgba(255,255,255,.92);
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: .3px;
   text-transform: uppercase;
   font-size: 16px;
 
-  /* растягиваем под длинное имя */
-  width: max-content;
-  max-width: calc(95vw - (2 * var(--bgPad)) - 86px); /* место под 1 box + gap */
+  flex: 1 1 auto;
+  min-width: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
+/* ✅ Счёт всегда “прилипает” к правому краю */
 .score{
+  margin-left: auto;
   display: inline-flex;
   gap: 8px;
-  flex-shrink: 0;
+  flex: 0 0 auto;
 }
 
+/* ✅ Бокс счёта — тоже непрозрачный */
 .box{
   width: 54px;
   height: 36px;
@@ -89,24 +94,27 @@ body.overlay{
   align-items:center;
   justify-content:center;
   border-radius: 10px;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.12);
+
+  background: #1b1f22; /* непрозрачный */
+  border: 1px solid rgba(255,255,255,.16);
+
   color: rgba(255,255,255,.92);
-  font-weight: 800;
+  font-weight: 900;
 }
 
+/* meta — тоже непрозрачная */
 .meta{
   margin-top: 2px;
   align-self: flex-start;
   padding: 6px 10px;
 
-  background: rgba(10,10,10,.55);
-  border: 1px solid rgba(255,255,255,.10);
+  background: #111315;
+  border: 1px solid rgba(255,255,255,.12);
   border-radius: 10px;
 
-  color: rgba(255,255,255,.72);
+  color: rgba(255,255,255,.78);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: .2px;
 
   max-width: calc(95vw - (2 * var(--bgPad)));
@@ -120,9 +128,10 @@ body.overlay{
 
 @media (max-width: 860px){
   .hud{ --bgPad: 28px; }
+  .row{ width: min(520px, calc(95vw - (2 * var(--bgPad)))); }
 }
 
-/* ===================== ADMIN (оставляем как было, не трогаем) ===================== */
+/* ===================== ADMIN (как было) ===================== */
 body.admin{
   margin:0;
   background:#0b0d12;

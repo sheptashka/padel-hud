@@ -14,6 +14,13 @@ function normalizeTournament(a, b, N) {
   return { a, b };
 }
 
+function updateTeamRowTitles() {
+  const aName = ($("teamA").value || "Команда A").trim() || "Команда A";
+  const bName = ($("teamB").value || "Команда B").trim() || "Команда B";
+  $("teamRowA").textContent = aName;
+  $("teamRowB").textContent = bName;
+}
+
 function fill(s) {
   $("teamA").value = s.teamA ?? "";
   $("teamB").value = s.teamB ?? "";
@@ -23,6 +30,8 @@ function fill(s) {
 
   $("a3").value = s.a3 ?? 0;
   $("b3").value = s.b3 ?? 0;
+
+  updateTeamRowTitles();
 }
 
 function emitAll() {
@@ -34,6 +43,8 @@ function emitAll() {
   $("a3").value = norm.a;
   $("b3").value = norm.b;
 
+  updateTeamRowTitles();
+
   socket.emit("setState", {
     mode: "tournament",
     maxPoints: N,
@@ -41,8 +52,6 @@ function emitAll() {
     teamA: $("teamA").value.trim() || "TEAM A",
     teamB: $("teamB").value.trim() || "TEAM B",
     hudPosition: $("hudPosition").value,
-    a1: 0, a2: 0,
-    b1: 0, b2: 0,
     a3: norm.a,
     b3: norm.b
   });
@@ -70,7 +79,6 @@ function applyDelta(team, delta) {
 socket.on("state", (s) => {
   state = s;
 
-  // миграция старого custom -> tournament
   if (!s.mode || s.mode === "custom") {
     socket.emit("setState", { mode: "tournament" });
   }
@@ -78,20 +86,27 @@ socket.on("state", (s) => {
   fill({ ...s, mode: s.mode === "custom" ? "tournament" : s.mode });
 });
 
+// кнопки
 $("apply").addEventListener("click", emitAll);
+$("reset").addEventListener("click", () => socket.emit("reset"));
 
 $("aPlus").addEventListener("click", () => applyDelta("A", +1));
 $("aMinus").addEventListener("click", () => applyDelta("A", -1));
 $("bPlus").addEventListener("click", () => applyDelta("B", +1));
 $("bMinus").addEventListener("click", () => applyDelta("B", -1));
 
-$("teamA").addEventListener("change", emitAll);
-$("teamB").addEventListener("change", emitAll);
-$("maxPoints").addEventListener("change", emitAll);
-$("hudPosition").addEventListener("change", emitAll);
-$("hudBg").addEventListener("change", emitAll);
+// автоприменение при изменениях (но без спама на каждый символ)
+["teamA", "teamB"].forEach((id) => {
+  $(id).addEventListener("input", updateTeamRowTitles);
+  $(id).addEventListener("change", emitAll);
+});
 
-$("a3").addEventListener("change", emitAll);
-$("b3").addEventListener("change", emitAll);
+["maxPoints", "hudPosition", "hudBg", "a3", "b3"].forEach((id) => {
+  $(id).addEventListener("change", emitAll);
+});
 
-$("reset").addEventListener("click", () => socket.emit("reset"));
+// превью toggle
+const previewBox = $("previewBox");
+$("showPreview").addEventListener("change", (e) => {
+  previewBox.classList.toggle("show", e.target.checked);
+});

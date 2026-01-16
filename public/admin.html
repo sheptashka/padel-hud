@@ -1,99 +1,289 @@
-<!doctype html>
-<html lang="ru">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Padel HUD Admin</title>
-  <link rel="stylesheet" href="/style.css" />
-</head>
-<body class="admin">
-  <div class="container">
-    <h1>Padel HUD — Админка</h1>
+/* ===================== HUD ===================== */
+body.overlay{
+  margin:0;
+  background: transparent;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
 
-    <div class="card">
-      <div class="grid2">
-        <div>
-          <label>Команда A</label>
-          <input id="teamA" />
-        </div>
-        <div>
-          <label>Команда B</label>
-          <input id="teamB" />
-        </div>
+.hud{
+  position: absolute;
+  top: 24px;
+  left: 24px;
 
-        <div>
-          <label>Турнирный счёт: до скольки (N)</label>
-          <input id="maxPoints" type="number" min="1" step="1" value="11" />
-          <div class="hint">Ограничение: A + B не может быть больше N</div>
-        </div>
+  width: max-content;
+  max-width: 95vw;
 
-        <div>
-          <label>Позиция HUD</label>
-          <select id="hudPosition">
-            <option value="tl">Сверху слева</option>
-            <option value="tr">Сверху справа</option>
-            <option value="bl">Снизу слева</option>
-            <option value="br">Снизу справа</option>
-          </select>
-        </div>
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 
-        <div class="span2">
-          <label>Фон HUD (для OBS / хромакей)</label>
-          <select id="hudBg">
-            <option value="transparent">Прозрачный</option>
-            <option value="black">Чёрный</option>
-            <option value="white">Белый</option>
-            <option value="chroma_green">Зелёный (chroma)</option>
-            <option value="chroma_purple">Фиолетовый (chroma)</option>
-            <option value="blue">Синий</option>
-            <option value="red">Красный</option>
-            <option value="yellow">Жёлтый</option>
-          </select>
-          <div class="hint">Для хромакея в OBS удобно: зелёный или фиолетовый</div>
-        </div>
-      </div>
+  filter: drop-shadow(0 10px 20px rgba(0,0,0,.35));
+  border-radius: 14px;
 
-      <div class="teamsPanel">
-        <div class="teamRow">
-          <div class="teamRowTitle">Команда A</div>
+  --bgPad: 40px;
+  padding: var(--bgPad);
 
-          <button class="btn" id="aMinus" aria-label="A minus">−</button>
+  isolation: isolate;
+}
 
-          <div class="scorePill">
-            <div class="scorePillLabel">Очки A</div>
-            <input class="scorePillInput" id="a3" type="number" min="0" step="1" />
-          </div>
+.hud::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius: 14px;
+  z-index: -1;
+  background: var(--hudBg, transparent);
+}
 
-          <button class="btn" id="aPlus" aria-label="A plus">+</button>
-        </div>
+/* фон HUD (для OBS хромакей) */
+.hud.bg-transparent{ --hudBg: transparent; }
+.hud.bg-black{ --hudBg: rgba(0,0,0,.55); }
+.hud.bg-white{ --hudBg: rgba(255,255,255,.85); }
+.hud.bg-chroma-green{ --hudBg: #00ff00; }
+.hud.bg-chroma-purple{ --hudBg: #ff00ff; }
+.hud.bg-blue{ --hudBg: #0066ff; }
+.hud.bg-red{ --hudBg: #ff0033; }
+.hud.bg-yellow{ --hudBg: #ffd400; }
 
-        <div class="teamRow">
-          <div class="teamRowTitle">Команда B</div>
+/* ✅ Плашка строки — делаем НЕпрозрачной, чтобы зелёный не просвечивал */
+.row{
+  display: flex;
+  align-items:center;
+  gap: 12px;
 
-          <button class="btn" id="bMinus" aria-label="B minus">−</button>
+  /* важное: непрозрачный фон */
+  background: #111315;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 12px;
 
-          <div class="scorePill">
-            <div class="scorePillLabel">Очки B</div>
-            <input class="scorePillInput" id="b3" type="number" min="0" step="1" />
-          </div>
+  padding: 10px 12px;
 
-          <button class="btn" id="bPlus" aria-label="B plus">+</button>
-        </div>
-      </div>
+  /* ✅ фиксируем ширину строки, чтобы “правый край” был стабильный */
+  width: min(620px, calc(95vw - (2 * var(--bgPad))));
+  box-sizing: border-box;
+}
 
-      <div class="rowBtns">
-        <button class="primary" id="apply">Применить</button>
-        <button class="danger" id="reset">Сбросить счет</button>
-      </div>
+/* ✅ Название слева, занимает всё свободное место */
+.team{
+  color: rgba(255,255,255,.92);
+  font-weight: 800;
+  letter-spacing: .3px;
+  text-transform: uppercase;
+  font-size: 16px;
 
-      <div class="preview">
-        <label>Preview:</label>
-        <iframe src="/hud.html"></iframe>
-      </div>
-    </div>
-  </div>
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="/admin.js"></script>
-</body>
-</html>
+/* ✅ Счёт всегда “прилипает” к правому краю */
+.score{
+  margin-left: auto;
+  display: inline-flex;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+/* ✅ Бокс счёта — тоже непрозрачный */
+.box{
+  width: 54px;
+  height: 36px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius: 10px;
+
+  background: #1b1f22; /* непрозрачный */
+  border: 1px solid rgba(255,255,255,.16);
+
+  color: rgba(255,255,255,.92);
+  font-weight: 900;
+}
+
+/* meta — тоже непрозрачная */
+.meta{
+  margin-top: 2px;
+  align-self: flex-start;
+  padding: 6px 10px;
+
+  background: #111315;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 10px;
+
+  color: rgba(255,255,255,.78);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .2px;
+
+  max-width: calc(95vw - (2 * var(--bgPad)));
+}
+
+/* позиции HUD */
+.hud.pos-tl{ top:24px; left:24px; right:auto; bottom:auto; position:absolute; }
+.hud.pos-tr{ top:24px; right:24px; left:auto; bottom:auto; position:absolute; }
+.hud.pos-bl{ bottom:24px; left:24px; top:auto; right:auto; position:absolute; }
+.hud.pos-br{ bottom:24px; right:24px; top:auto; left:auto; position:absolute; }
+
+@media (max-width: 860px){
+  .hud{ --bgPad: 28px; }
+  .row{ width: min(520px, calc(95vw - (2 * var(--bgPad)))); }
+}
+
+/* ===================== ADMIN (как было) ===================== */
+body.admin{
+  margin:0;
+  background:#0b0d12;
+  color:#f3f3f3;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+.container{
+  max-width: 1100px;
+  margin: 18px auto;
+  padding: 0 14px 28px;
+}
+
+h1{
+  margin:0 0 12px;
+  font-size: 20px;
+}
+
+.card{
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 10px 25px rgba(0,0,0,.35);
+}
+
+label{
+  display:block;
+  font-size:12px;
+  opacity:.82;
+  margin-bottom:6px;
+}
+
+.hint{
+  margin-top:6px;
+  font-size:12px;
+  opacity:.65;
+}
+
+input, select{
+  width:100%;
+  padding:10px 12px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.12);
+  background: rgba(0,0,0,.25);
+  color:#f3f3f3;
+  outline:none;
+  box-sizing: border-box;
+}
+
+.grid2{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.span2{ grid-column: 1 / -1; }
+
+.teamsPanel{
+  margin-top: 14px;
+  display:grid;
+  gap: 12px;
+}
+
+.teamRow{
+  display:grid;
+  grid-template-columns: 160px 52px 1fr 52px;
+  gap: 10px;
+  align-items:center;
+
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(0,0,0,.18);
+}
+
+.teamRowTitle{
+  font-weight: 800;
+  opacity: .92;
+}
+
+.btn{
+  width: 52px;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  color: #f3f3f3;
+  cursor: pointer;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.scorePill{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 10px;
+
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.04);
+}
+
+.scorePillLabel{
+  font-size: 12px;
+  opacity: .75;
+  white-space: nowrap;
+}
+
+.scorePillInput{
+  width: 140px;
+  max-width: 45vw;
+}
+
+.rowBtns{
+  margin-top: 14px;
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+button{
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  color:#f3f3f3;
+  cursor:pointer;
+  font-weight:700;
+}
+
+button.primary{ border-color: rgba(255,255,255,.25); }
+button.danger{ border-color: rgba(255, 90, 90, .55); }
+
+.preview{
+  margin-top: 14px;
+}
+
+.preview iframe{
+  width: 100%;
+  max-width: 760px;
+  height: 220px;
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 14px;
+  background: transparent;
+  overflow: hidden;
+}
+
+@media (max-width: 860px){
+  .grid2{ grid-template-columns: 1fr; }
+  .span2{ grid-column: auto; }
+  .teamRow{ grid-template-columns: 1fr 52px 1fr 52px; }
+  .teamRowTitle{ grid-column: 1 / -1; }
+}
