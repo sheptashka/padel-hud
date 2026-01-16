@@ -2,6 +2,7 @@ const socket = io();
 const $ = (id) => document.getElementById(id);
 
 const hud = $("hud");
+const meta = $("meta");
 
 function setPos(pos) {
   hud.classList.remove("pos-tl", "pos-tr", "pos-bl", "pos-br");
@@ -9,14 +10,35 @@ function setPos(pos) {
 }
 
 // грубая оценка ширины по длине (без пробелов)
-// подобрано под текущий font-size 16 и uppercase
 function calcTeamWidth(nameA, nameB) {
   const clean = (s) => String(s || "").replace(/\s+/g, "");
   const maxLen = Math.max(clean(nameA).length, clean(nameB).length, 4);
-
-  // 9px на символ + паддинги строки и запас под эллипсис
   const px = 12 + maxLen * 9 + 18;
-  return Math.max(140, Math.min(px, 360)); // ограничим разумными рамками
+  return Math.max(140, Math.min(px, 360));
+}
+
+function updateMeta(s) {
+  if ((s.mode ?? "classic") !== "custom") {
+    meta.style.display = "none";
+    meta.textContent = "";
+    return;
+  }
+
+  const N = Number(s.maxPoints ?? 11);
+  const a = Number(s.a3 ?? 0);
+  const b = Number(s.b3 ?? 0);
+
+  let left = N - (a + b);
+  if (!Number.isFinite(left)) left = 0;
+  if (left < 0) left = 0;
+
+  if (left === 1) {
+    meta.textContent = "финальный розыгрыш";
+  } else {
+    meta.textContent = `осталось розыгрышей: ${left}`;
+  }
+
+  meta.style.display = "inline-flex";
 }
 
 socket.on("state", (s) => {
@@ -38,4 +60,6 @@ socket.on("state", (s) => {
 
   const teamW = calcTeamWidth(aName, bName);
   hud.style.setProperty("--teamW", `${teamW}px`);
+
+  updateMeta(s);
 });

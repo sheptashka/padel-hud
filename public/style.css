@@ -8,18 +8,23 @@ body.overlay{
   position: absolute;
   top: 24px;
   left: 24px;
-  width: 520px;
+
+  width: max-content;          /* под размер контента */
+  max-width: 95vw;
+
   display: flex;
   flex-direction: column;
   gap: 10px;
+
   filter: drop-shadow(0 10px 20px rgba(0,0,0,.35));
 }
 
 .row{
-  display:flex;
+  display: inline-flex;        /* фон по контенту */
   align-items:center;
-  justify-content: flex-start;  /* было space-between */
+  justify-content: flex-start;
   gap: 12px;
+
   background: rgba(10,10,10,.78);
   border: 1px solid rgba(255,255,255,.14);
   border-radius: 12px;
@@ -40,8 +45,9 @@ body.overlay{
 }
 
 .score{
-  display:flex;
+  display: inline-flex;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 .box{
@@ -57,10 +63,19 @@ body.overlay{
   font-weight: 800;
 }
 
-.note{
+.meta{
   margin-top: 2px;
-  color: rgba(255,255,255,.6);
+  align-self: flex-start;
+  padding: 6px 10px;
+
+  background: rgba(10,10,10,.55);
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 10px;
+
+  color: rgba(255,255,255,.72);
   font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .2px;
 }
 
 /* позиции HUD */
@@ -116,4 +131,3 @@ button.danger{ border-color: rgba(255, 90, 90, .55); }
   border-radius: 14px;
   background: transparent;
 }
-
