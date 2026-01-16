@@ -29,7 +29,7 @@ function setBg(bg) {
     chroma_purple: "bg-chroma-purple",
     blue: "bg-blue",
     red: "bg-red",
-    yellow: "bg-yellow"
+    yellow: "bg-yellow",
   };
 
   hud.classList.add(map[bg] || "bg-transparent");
@@ -42,7 +42,8 @@ function calcTeamWidth(nameA, nameB) {
   return Math.max(140, Math.min(px, 360));
 }
 
-function updateMeta(s) {
+function updateMetaTournament(s) {
+  // показываем только в tournament режиме
   if ((s.mode ?? "tournament") !== "tournament") {
     meta.style.display = "none";
     meta.textContent = "";
@@ -51,7 +52,19 @@ function updateMeta(s) {
 
   const N = Number(s.maxPoints ?? 11);
   const a = Number(s.a3 ?? 0);
-  const b = Number(s.b3 ?? ?? 0); // will fix below
+  const b = Number(s.b3 ?? 0);
+
+  let left = N - (a + b);
+  if (!Number.isFinite(left)) left = 0;
+  if (left < 0) left = 0;
+
+  if (left === 1) {
+    meta.textContent = "финальный розыгрыш";
+  } else {
+    meta.textContent = `осталось розыгрышей: ${left}`;
+  }
+
+  meta.style.display = "inline-flex";
 }
 
 socket.on("state", (s) => {
@@ -75,20 +88,5 @@ socket.on("state", (s) => {
   const teamW = calcTeamWidth(aName, bName);
   hud.style.setProperty("--teamW", `${teamW}px`);
 
-  // meta
-  const N = Number(s.maxPoints ?? 11);
-  const a = Number(s.a3 ?? 0);
-  const b = Number(s.b3 ?? 0);
-
-  let left = N - (a + b);
-  if (!Number.isFinite(left)) left = 0;
-  if (left < 0) left = 0;
-
-  if (left === 1) {
-    meta.textContent = "финальный розыгрыш";
-  } else {
-    meta.textContent = `осталось розыгрышей: ${left}`;
-  }
-
-  meta.style.display = "inline-flex";
+  updateMetaTournament(s);
 });

@@ -11,12 +11,11 @@
     <h1>Padel HUD — Админка</h1>
 
     <div class="card">
-      <div class="grid">
+      <div class="grid2">
         <div>
           <label>Команда A</label>
           <input id="teamA" />
         </div>
-
         <div>
           <label>Команда B</label>
           <input id="teamB" />
@@ -38,7 +37,7 @@
           </select>
         </div>
 
-        <div>
+        <div class="span2">
           <label>Фон HUD (для OBS / хромакей)</label>
           <select id="hudBg">
             <option value="transparent">Прозрачный</option>
@@ -52,33 +51,33 @@
           </select>
           <div class="hint">Для хромакея в OBS удобно: зелёный или фиолетовый</div>
         </div>
-
-        <div></div>
       </div>
 
       <div class="teamsPanel">
-        <div class="teamLine">
-          <div class="teamLabel">Команда A</div>
-          <div class="teamControls">
-            <button class="btn" id="aMinus">−</button>
-            <div class="pill">
-              <span class="pillTitle">Очки A</span>
-              <input class="pillInput" id="a3" type="number" min="0" step="1" />
-            </div>
-            <button class="btn" id="aPlus">+</button>
+        <div class="teamRow">
+          <div class="teamRowTitle">Команда A</div>
+
+          <button class="btn" id="aMinus" aria-label="A minus">−</button>
+
+          <div class="scorePill">
+            <div class="scorePillLabel">Очки A</div>
+            <input class="scorePillInput" id="a3" type="number" min="0" step="1" />
           </div>
+
+          <button class="btn" id="aPlus" aria-label="A plus">+</button>
         </div>
 
-        <div class="teamLine">
-          <div class="teamLabel">Команда B</div>
-          <div class="teamControls">
-            <button class="btn" id="bMinus">−</button>
-            <div class="pill">
-              <span class="pillTitle">Очки B</span>
-              <input class="pillInput" id="b3" type="number" min="0" step="1" />
-            </div>
-            <button class="btn" id="bPlus">+</button>
+        <div class="teamRow">
+          <div class="teamRowTitle">Команда B</div>
+
+          <button class="btn" id="bMinus" aria-label="B minus">−</button>
+
+          <div class="scorePill">
+            <div class="scorePillLabel">Очки B</div>
+            <input class="scorePillInput" id="b3" type="number" min="0" step="1" />
           </div>
+
+          <button class="btn" id="bPlus" aria-label="B plus">+</button>
         </div>
       </div>
 

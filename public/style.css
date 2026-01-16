@@ -18,16 +18,16 @@ body.overlay{
   gap: 10px;
 
   filter: drop-shadow(0 10px 20px rgba(0,0,0,.35));
-  border-radius: 14px; /* чтобы фон (если включен) выглядел аккуратно */
-  padding: 0;          /* фон только вокруг row/meta, не вокруг пустоты */
+  border-radius: 14px;
+  padding: 0;
 }
 
-/* фон HUD (для хромакея в OBS) */
+/* фон HUD (для OBS хромакей) */
 .hud.bg-transparent{ background: transparent; }
 .hud.bg-black{ background: rgba(0,0,0,.55); }
 .hud.bg-white{ background: rgba(255,255,255,.85); }
-.hud.bg-chroma-green{ background: #00ff00; }   /* чистый для keying */
-.hud.bg-chroma-purple{ background: #ff00ff; }  /* чистый для keying */
+.hud.bg-chroma-green{ background: #00ff00; }
+.hud.bg-chroma-purple{ background: #ff00ff; }
 .hud.bg-blue{ background: #0066ff; }
 .hud.bg-red{ background: #ff0033; }
 .hud.bg-yellow{ background: #ffd400; }
@@ -42,7 +42,6 @@ body.overlay{
   border: 1px solid rgba(255,255,255,.14);
   border-radius: 12px;
   padding: 10px 12px;
-  margin: 0; /* аккуратно */
 }
 
 .team{
@@ -107,8 +106,8 @@ body.admin{
 }
 
 .container{
-  max-width: 1080px;
-  margin: 20px auto;
+  max-width: 1100px;
+  margin: 18px auto;
   padding: 0 14px 28px;
 }
 
@@ -128,7 +127,7 @@ h1{
 label{
   display:block;
   font-size:12px;
-  opacity:.8;
+  opacity:.82;
   margin-bottom:6px;
 }
 
@@ -146,25 +145,29 @@ input, select{
   background: rgba(0,0,0,.25);
   color:#f3f3f3;
   outline:none;
+  box-sizing: border-box;
 }
 
-.grid{
+/* форма сверху */
+.grid2{
   display:grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
 }
+.span2{ grid-column: 1 / -1; }
 
+/* блок команд */
 .teamsPanel{
   margin-top: 14px;
-  display: grid;
+  display:grid;
   gap: 12px;
 }
 
-.teamLine{
-  display:flex;
+.teamRow{
+  display:grid;
+  grid-template-columns: 160px 52px 1fr 52px;
+  gap: 10px;
   align-items:center;
-  justify-content: space-between;
-  gap: 12px;
 
   padding: 12px;
   border-radius: 14px;
@@ -172,58 +175,52 @@ input, select{
   background: rgba(0,0,0,.18);
 }
 
-.teamLabel{
+.teamRowTitle{
   font-weight: 800;
-  letter-spacing: .2px;
-  opacity: .9;
-  min-width: 120px;
-}
-
-.teamControls{
-  display:flex;
-  align-items:center;
-  gap: 10px;
-  flex-wrap: wrap;
+  opacity: .92;
 }
 
 .btn{
-  width: 44px;
-  height: 40px;
-  border-radius: 12px;
+  width: 52px;
+  height: 44px;
+  border-radius: 14px;
   border: 1px solid rgba(255,255,255,.12);
   background: rgba(255,255,255,.06);
   color: #f3f3f3;
   cursor: pointer;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 900;
 }
 
-.pill{
+.scorePill{
   display:flex;
   align-items:center;
+  justify-content: space-between;
   gap: 10px;
-  padding: 8px 10px;
-  border-radius: 12px;
+
+  padding: 10px 12px;
+  border-radius: 14px;
   border: 1px solid rgba(255,255,255,.10);
   background: rgba(255,255,255,.04);
 }
 
-.pillTitle{
+.scorePillLabel{
   font-size: 12px;
   opacity: .75;
   white-space: nowrap;
 }
 
-.pillInput{
-  width: 110px;
-  max-width: 40vw;
+.scorePillInput{
+  width: 140px;
+  max-width: 45vw;
 }
 
+/* кнопки снизу */
 .rowBtns{
   margin-top: 14px;
   display:flex;
-  flex-wrap:wrap;
   gap:10px;
+  flex-wrap:wrap;
 }
 
 button{
@@ -239,23 +236,25 @@ button{
 button.primary{ border-color: rgba(255,255,255,.25); }
 button.danger{ border-color: rgba(255, 90, 90, .55); }
 
+/* preview */
 .preview{
   margin-top: 14px;
 }
 
 .preview iframe{
   width: 100%;
-  max-width: 720px;
+  max-width: 760px;
   height: 220px;
   border: 1px solid rgba(255,255,255,.10);
   border-radius: 14px;
   background: transparent;
+  overflow: hidden;
 }
 
 /* адаптив */
 @media (max-width: 860px){
-  .grid{ grid-template-columns: 1fr; }
-  .teamLine{ flex-direction: column; align-items: stretch; }
-  .teamLabel{ min-width: auto; }
-  .teamControls{ justify-content: space-between; }
+  .grid2{ grid-template-columns: 1fr; }
+  .span2{ grid-column: auto; }
+  .teamRow{ grid-template-columns: 1fr 52px 1fr 52px; }
+  .teamRowTitle{ grid-column: 1 / -1; }
 }
