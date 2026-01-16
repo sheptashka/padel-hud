@@ -1,0 +1,62 @@
+body.overlay{
+  margin:0;
+  background: transparent; /* важно для OBS */
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+.hud{
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  width: 520px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  filter: drop-shadow(0 10px 20px rgba(0,0,0,.35));
+}
+
+.row{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  background: rgba(10,10,10,.78);
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.team{
+  color: rgba(255,255,255,.92);
+  font-weight: 700;
+  letter-spacing: .3px;
+  text-transform: uppercase;
+  font-size: 16px;
+  max-width: 330px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.score{
+  display:flex;
+  gap: 8px;
+}
+
+.box{
+  width: 46px;
+  height: 34px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius: 10px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+  color: rgba(255,255,255,.92);
+  font-weight: 800;
+}
+
+.note{
+  margin-top: 2px;
+  color: rgba(255,255,255,.6);
+  font-size: 12px;
+}
