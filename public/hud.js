@@ -48,15 +48,52 @@ function updateMetaTournament(s) {
 
   let left = N - (a + b);
   if (!Number.isFinite(left)) left = 0;
-  if (left < 0) left = 0;
 
+  // Финальный/осталось
   if (left === 1) {
     meta.textContent = "финальный розыгрыш";
-  } else {
-    meta.textContent = `осталось розыгрышей: ${left}`;
+    meta.style.display = "inline-flex";
+    return;
   }
 
+  // Победа (когда дошли до 0 или перелетели)
+  if (left <= 0) {
+    const nameA = (s.teamA ?? "TEAM A").trim() || "TEAM A";
+    const nameB = (s.teamB ?? "TEAM B").trim() || "TEAM B";
+
+    if (a > b) meta.textContent = `победила команда — ${nameA}`;
+    else if (b > a) meta.textContent = `победила команда — ${nameB}`;
+    else meta.textContent = "ничья";
+
+    meta.style.display = "inline-flex";
+    return;
+  }
+
+  meta.textContent = `осталось розыгрышей: ${left}`;
   meta.style.display = "inline-flex";
+}
+
+/**
+ * Делает ширину обеих строк одинаковой (по самой широкой из них).
+ */
+function syncRowWidths() {
+  // сбрасываем, чтобы корректно перемерить
+  hud.style.removeProperty("--rowW");
+
+  requestAnimationFrame(() => {
+    const rows = hud.querySelectorAll(".row");
+    let maxW = 0;
+
+    rows.forEach((r) => {
+      // scrollWidth чаще точнее при max-content
+      const w = Math.ceil(Math.max(r.offsetWidth, r.scrollWidth));
+      if (w > maxW) maxW = w;
+    });
+
+    if (maxW > 0) {
+      hud.style.setProperty("--rowW", `${maxW}px`);
+    }
+  });
 }
 
 socket.on("state", (s) => {
@@ -70,4 +107,7 @@ socket.on("state", (s) => {
   setBg(s.hudBg);
 
   updateMetaTournament(s);
+
+  // ✅ ширина строк подгоняется под самую длинную
+  syncRowWidths();
 });

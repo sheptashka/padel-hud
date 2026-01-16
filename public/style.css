@@ -44,7 +44,7 @@ body.overlay{
 .hud.bg-red{ --hudBg: #ff0033; }
 .hud.bg-yellow{ --hudBg: #ffd400; }
 
-/* ✅ Плашка теперь компактная по контенту */
+/* ✅ Одна ширина для обеих строк (JS ставит --rowW) */
 .row{
   display: inline-flex;
   align-items:center;
@@ -56,12 +56,11 @@ body.overlay{
 
   padding: 10px 12px;
 
-  width: max-content;          /* ключ: не растягиваем */
+  width: var(--rowW, max-content);
   max-width: calc(95vw - (2 * var(--bgPad)));
   box-sizing: border-box;
 }
 
-/* ✅ Название НЕ растягиваем на всю строку */
 .team{
   color: rgba(255,255,255,.92);
   font-weight: 800;
@@ -69,14 +68,13 @@ body.overlay{
   text-transform: uppercase;
   font-size: 16px;
 
-  flex: 0 1 auto;              /* ключ: не “заполняй всё” */
+  flex: 0 1 auto;
   max-width: calc(95vw - (2 * var(--bgPad)) - 86px);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* счёт всегда справа от названия, но без огромного растяжения */
 .score{
   display: inline-flex;
   gap: 8px;
