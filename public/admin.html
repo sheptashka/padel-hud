@@ -16,21 +16,16 @@
           <label>Команда A</label>
           <input id="teamA" />
         </div>
+
         <div>
           <label>Команда B</label>
           <input id="teamB" />
         </div>
 
         <div>
-          <label>Режим счета</label>
-          <select id="mode">
-            <option value="classic">Классический (потом настроим логику)</option>
-            <option value="custom">Кастомный до N</option>
-          </select>
-        </div>
-        <div>
-          <label>До скольки (для custom)</label>
+          <label>Турнирный счёт: до скольки (N)</label>
           <input id="maxPoints" type="number" min="1" step="1" value="11" />
+          <div class="hint">Ограничение: A + B не может быть больше N</div>
         </div>
 
         <div>
@@ -42,50 +37,55 @@
             <option value="br">Снизу справа</option>
           </select>
         </div>
+
+        <div>
+          <label>Фон HUD (для OBS / хромакей)</label>
+          <select id="hudBg">
+            <option value="transparent">Прозрачный</option>
+            <option value="black">Чёрный</option>
+            <option value="white">Белый</option>
+            <option value="chroma_green">Зелёный (chroma)</option>
+            <option value="chroma_purple">Фиолетовый (chroma)</option>
+            <option value="blue">Синий</option>
+            <option value="red">Красный</option>
+            <option value="yellow">Жёлтый</option>
+          </select>
+          <div class="hint">Для хромакея в OBS удобно: зелёный или фиолетовый</div>
+        </div>
+
         <div></div>
+      </div>
 
-        <div>
-          <label>A: значение 1</label>
-          <input id="a1" type="number" />
-        </div>
-        <div>
-          <label>B: значение 1</label>
-          <input id="b1" type="number" />
-        </div>
-
-        <div>
-          <label>A: значение 2</label>
-          <input id="a2" type="number" />
-        </div>
-        <div>
-          <label>B: значение 2</label>
-          <input id="b2" type="number" />
+      <div class="teamsPanel">
+        <div class="teamLine">
+          <div class="teamLabel">Команда A</div>
+          <div class="teamControls">
+            <button class="btn" id="aMinus">−</button>
+            <div class="pill">
+              <span class="pillTitle">Очки A</span>
+              <input class="pillInput" id="a3" type="number" min="0" step="1" />
+            </div>
+            <button class="btn" id="aPlus">+</button>
+          </div>
         </div>
 
-        <div>
-          <label>A: значение 3</label>
-          <input id="a3" type="number" />
-        </div>
-        <div>
-          <label>B: значение 3</label>
-          <input id="b3" type="number" />
+        <div class="teamLine">
+          <div class="teamLabel">Команда B</div>
+          <div class="teamControls">
+            <button class="btn" id="bMinus">−</button>
+            <div class="pill">
+              <span class="pillTitle">Очки B</span>
+              <input class="pillInput" id="b3" type="number" min="0" step="1" />
+            </div>
+            <button class="btn" id="bPlus">+</button>
+          </div>
         </div>
       </div>
 
-      <div style="height:14px"></div>
-
-<div class="rowBtns">
-  <button class="primary" id="apply">Применить</button>
-
-  <button id="aMinus">A -1</button>
-  <button id="aPlus">A +1</button>
-
-  <button id="bMinus">B -1</button>
-  <button id="bPlus">B +1</button>
-
-  <button class="danger" id="reset">Сбросить счет</button>
-</div>
-
+      <div class="rowBtns">
+        <button class="primary" id="apply">Применить</button>
+        <button class="danger" id="reset">Сбросить счет</button>
+      </div>
 
       <div class="preview">
         <label>Preview:</label>

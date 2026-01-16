@@ -9,7 +9,32 @@ function setPos(pos) {
   hud.classList.add(`pos-${pos || "tl"}`);
 }
 
-// грубая оценка ширины по длине (без пробелов)
+function setBg(bg) {
+  hud.classList.remove(
+    "bg-transparent",
+    "bg-black",
+    "bg-white",
+    "bg-chroma-green",
+    "bg-chroma-purple",
+    "bg-blue",
+    "bg-red",
+    "bg-yellow"
+  );
+
+  const map = {
+    transparent: "bg-transparent",
+    black: "bg-black",
+    white: "bg-white",
+    chroma_green: "bg-chroma-green",
+    chroma_purple: "bg-chroma-purple",
+    blue: "bg-blue",
+    red: "bg-red",
+    yellow: "bg-yellow"
+  };
+
+  hud.classList.add(map[bg] || "bg-transparent");
+}
+
 function calcTeamWidth(nameA, nameB) {
   const clean = (s) => String(s || "").replace(/\s+/g, "");
   const maxLen = Math.max(clean(nameA).length, clean(nameB).length, 4);
@@ -18,7 +43,7 @@ function calcTeamWidth(nameA, nameB) {
 }
 
 function updateMeta(s) {
-  if ((s.mode ?? "classic") !== "custom") {
+  if ((s.mode ?? "tournament") !== "tournament") {
     meta.style.display = "none";
     meta.textContent = "";
     return;
@@ -26,19 +51,7 @@ function updateMeta(s) {
 
   const N = Number(s.maxPoints ?? 11);
   const a = Number(s.a3 ?? 0);
-  const b = Number(s.b3 ?? 0);
-
-  let left = N - (a + b);
-  if (!Number.isFinite(left)) left = 0;
-  if (left < 0) left = 0;
-
-  if (left === 1) {
-    meta.textContent = "финальный розыгрыш";
-  } else {
-    meta.textContent = `осталось розыгрышей: ${left}`;
-  }
-
-  meta.style.display = "inline-flex";
+  const b = Number(s.b3 ?? ?? 0); // will fix below
 }
 
 socket.on("state", (s) => {
@@ -57,9 +70,25 @@ socket.on("state", (s) => {
   $("b3").textContent = String(s.b3 ?? 0);
 
   setPos(s.hudPosition);
+  setBg(s.hudBg);
 
   const teamW = calcTeamWidth(aName, bName);
   hud.style.setProperty("--teamW", `${teamW}px`);
 
-  updateMeta(s);
+  // meta
+  const N = Number(s.maxPoints ?? 11);
+  const a = Number(s.a3 ?? 0);
+  const b = Number(s.b3 ?? 0);
+
+  let left = N - (a + b);
+  if (!Number.isFinite(left)) left = 0;
+  if (left < 0) left = 0;
+
+  if (left === 1) {
+    meta.textContent = "финальный розыгрыш";
+  } else {
+    meta.textContent = `осталось розыгрышей: ${left}`;
+  }
+
+  meta.style.display = "inline-flex";
 });
