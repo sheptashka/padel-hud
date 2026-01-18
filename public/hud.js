@@ -97,6 +97,8 @@ function syncRowWidths() {
 }
 
 socket.on("state", (s) => {
+  hud.style.display = (s.hudVisible ?? true) ? "flex" : "none";
+  if (!(s.hudVisible ?? true)) return;
   $("teamA").textContent = s.teamA ?? "TEAM A";
   $("teamB").textContent = s.teamB ?? "TEAM B";
 
@@ -109,5 +111,5 @@ socket.on("state", (s) => {
   updateMetaTournament(s);
 
   // ✅ ширина строк подгоняется под самую длинную
-  syncRowWidths();
+  // syncRowWidths();
 });

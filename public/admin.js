@@ -36,6 +36,10 @@ function fill(s) {
   $("b3").value = s.b3 ?? 0;
 
   updateTeamRowTitles();
+
+  if ($("showHud")) {
+    $("showHud").checked = (s.hudVisible ?? true);
+  }
 }
 
 function buildPatchFromUI() {
@@ -60,7 +64,8 @@ function buildPatchFromUI() {
     teamB: $("teamB").value.trim() || "TEAM B",
     hudPosition: $("hudPosition").value,
     a3: norm.a,
-    b3: norm.b
+    b3: norm.b,
+    hudVisible: $("showHud") ? $("showHud").checked : true,
   };
 }
 
@@ -87,13 +92,16 @@ function emitAll() {
 }
 
 function applyDelta(team, delta) {
-  const N = Number(state?.maxPoints ?? $("maxPoints").value ?? 11);
-  const a = Number(state?.a3 ?? $("a3").value ?? 0);
-  const b = Number(state?.b3 ?? $("b3").value ?? 0);
+    const N = Number($("maxPoints").value ?? 11);
+    // ✅ всегда берём актуальные цифры из инпутов
+    const a = Number($("a3").value ?? 0);
+    const b = Number($("b3").value ?? 0);
 
   if (team === "A") {
     const na = clamp(a + delta, 0, N);
     const nb = clamp(b, 0, N - na);
+    $("a3").value = na;
+    $("b3").value = nb;
     const patch = { mode: "tournament", maxPoints: N, a3: na, b3: nb };
     saveLocal({ ...buildPatchFromUI(), ...patch });
     socket.emit("setState", patch);
@@ -102,6 +110,8 @@ function applyDelta(team, delta) {
 
   const nb = clamp(b + delta, 0, N);
   const na = clamp(a, 0, N - nb);
+  $("a3").value = na;
+  $("b3").value = nb;
   const patch = { mode: "tournament", maxPoints: N, a3: na, b3: nb };
   saveLocal({ ...buildPatchFromUI(), ...patch });
   socket.emit("setState", patch);
@@ -139,7 +149,12 @@ socket.on("state", (s) => {
 
 // кнопки
 $("apply").addEventListener("click", emitAll);
-$("reset").addEventListener("click", () => socket.emit("reset"));
+$("reset").addEventListener("click", () => {
+  try { localStorage.removeItem(LS_KEY); } catch (_) {}
+  socket.emit("reset");
+  // просим актуальный state после reset, чтобы UI обновился
+  setTimeout(() => socket.emit("getState"), 200);
+});
 
 $("aPlus").addEventListener("click", () => applyDelta("A", +1));
 $("aMinus").addEventListener("click", () => applyDelta("A", -1));
@@ -156,6 +171,10 @@ $("bMinus").addEventListener("click", () => applyDelta("B", -1));
 ["maxPoints", "hudPosition", "hudBg", "a3", "b3"].forEach((id) => {
   $(id).addEventListener("change", emitAll);
 });
+
+if ($("showHud")) {
+  $("showHud").addEventListener("change", emitAll);
+}
 
 // превью toggle (если есть)
 const previewBox = document.getElementById("previewBox");
