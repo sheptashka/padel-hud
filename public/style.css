@@ -161,6 +161,17 @@ h1{
   padding: 16px;
   box-shadow: 0 10px 25px rgba(0,0,0,.35);
 }
+.card{
+  overflow: visible;
+}
+
+/* Обёртка таблицы матчей — скроллим только таблицу, не всю карточку */
+.matchesWrap{
+  margin-top: 10px;
+  overflow: auto;
+  max-height: 55vh; /* чтобы кнопки всегда были видны */
+  padding-bottom: 12px;
+}
 
 label{
   display:block;

@@ -1,4 +1,9 @@
 const socket = io();
+const bootLocal = loadMatchesLocal();
+if (bootLocal) {
+  window.__matches = bootLocal;
+  renderAdminMatches(bootLocal);
+}
 const $ = (id) => document.getElementById(id);
 
 const LS_KEY = "padel_hud_state_v1";
@@ -90,6 +95,18 @@ function renderAdminMatches(matches){
       </td>
     `;
     body.appendChild(tr);
+    // ✅ сохраняем в память при любом изменении, чтобы не "сбрасывало"
+    tr.querySelectorAll(".matchIn").forEach((el) => {
+      el.addEventListener("input", () => {
+        window.__matches = collectAdminMatches();
+        saveMatchesLocal(window.__matches);
+      });
+      el.addEventListener("change", () => {
+        window.__matches = collectAdminMatches();
+        saveMatchesLocal(window.__matches);
+      });
+    });
+
   });
 }
 
@@ -225,7 +242,7 @@ socket.on("state", (s) => {
   // --- matches for results page ---
   const serverMatches = Array.isArray(s?.matches) && s.matches.length ? s.matches : null;
   const localMatches = loadMatchesLocal();
-  const useMatches = serverMatches || localMatches || DEFAULT_MATCHES;
+const useMatches = localMatches || serverMatches || DEFAULT_MATCHES;
 
   window.__matches = useMatches;
   renderAdminMatches(useMatches);
