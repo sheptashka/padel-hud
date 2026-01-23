@@ -30,7 +30,7 @@ let state = {
   teamA: "TEAM A",
   teamB: "TEAM B",
   a1: 0, a2: 0, a3: 0,
-  b1: 0, b2: 0, b3: 0
+  b1: 0, b2: 0, b3: 0,
   matches: DEFAULT_MATCHES,
 
 };
