@@ -1,9 +1,4 @@
 const socket = io();
-const bootLocal = loadMatchesLocal();
-if (bootLocal) {
-  window.__matches = bootLocal;
-  renderAdminMatches(bootLocal);
-}
 const $ = (id) => document.getElementById(id);
 
 const LS_KEY = "padel_hud_state_v1";
@@ -210,6 +205,13 @@ function applyDelta(team, delta) {
   saveLocal({ ...buildPatchFromUI(), ...patch });
   socket.emit("setState", patch);
 }
+// ✅ сразу покажем локальные матчи при открытии страницы
+
+const bootLocal = loadMatchesLocal();
+if (bootLocal) {
+  window.__matches = bootLocal;
+  renderAdminMatches(bootLocal);
+}
 
 // ✅ При подключении просим state и если сервер прислал нули — переотправляем сохранённый
 socket.on("connect", () => {
@@ -293,22 +295,32 @@ if (previewBox && showPreview) {
 }
 
 const saveBtn = document.getElementById("saveMatches");
-if(saveBtn){
+if (saveBtn) {
   saveBtn.addEventListener("click", (e) => {
-  e.preventDefault();
+    e.preventDefault();
+    e.stopPropagation();
+
     const matches = collectAdminMatches();
     window.__matches = matches;
     saveMatchesLocal(matches);
+
     socket.emit("setMatches", matches);
+
+    const hintEl = document.getElementById("matchesSavedHint");
+    if (hintEl) {
+      hintEl.textContent = "Сохранено ✔";
+      setTimeout(() => (hintEl.textContent = ""), 1500);
+    }
   });
-}
+}  
 
 const clearBtn = document.getElementById("clearMatches");
-if(clearBtn){
+if (clearBtn) {
   clearBtn.addEventListener("click", (e) => {
-  e.preventDefault();
+    e.preventDefault();
+    e.stopPropagation();
 
-    const cleared = (window.__matches || DEFAULT_MATCHES).map((m) => ({...m, score:"", winner:""}));
+    const cleared = (window.__matches || DEFAULT_MATCHES).map((m) => ({ ...m, score: "", winner: "" }));
     window.__matches = cleared;
     saveMatchesLocal(cleared);
     renderAdminMatches(cleared);
