@@ -26,6 +26,22 @@ function normalizeMatches(matchesFromState){
   }));
 }
 
+const MATCHES_KEY = "padel_matches_v1";
+
+function loadMatchesLocal(){
+  try{
+    const raw = localStorage.getItem(MATCHES_KEY);
+    if(!raw) return null;
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr : null;
+  }catch(_){ return null; }
+}
+
+function saveMatchesLocal(matches){
+  try{ localStorage.setItem(MATCHES_KEY, JSON.stringify(matches)); }catch(_){}
+}
+
+
 function isPlayed(m){
   return !!parseScore(m.score);
 }
@@ -171,9 +187,40 @@ socket.on("connect", ()=>{
 });
 
 socket.on("state", (s)=>{
-  const teamA = String(s?.teamA ?? "Команда A").trim() || "Команда A";
-  const teamB = String(s?.teamB ?? "Команда B").trim() || "Команда B";
-  setHeaderNames(teamA, teamB);
+  const serverMatches = normalizeMatches(s?.matches);
+
+  // берём только реально сыгранные матчи (с корректным score)
+  const played = serverMatches.filter(m => parseScore(m.score));
+
+  // Если сервер прислал пусто/0 сыгранных — попробуем восстановить из localStorage
+  const local = loadMatchesLocal();
+  if(played.length === 0 && local && Array.isArray(local) && local.length){
+    const localNorm = normalizeMatches(local);
+    const localPlayed = localNorm.filter(m => parseScore(m.score));
+
+    if(localPlayed.length){
+      // показываем из local
+      renderMatches(localPlayed, s?.teamA || "Команда A", s?.teamB || "Команда B");
+      renderStandings(computeStandings(localNorm, s?.teamA || "Команда A", s?.teamB || "Команда B"));
+      // и пушим на сервер (чтобы не надо было жать “сохранить” в админке)
+      socket.emit("setMatches", localNorm);
+
+      const st = $("statusLine");
+      if(st) st.textContent = `Восстановлено из браузера • сыграно матчей: ${localPlayed.length}`;
+      return;
+    }
+  }
+
+  // обычный сценарий
+  renderMatches(played, s?.teamA || "Команда A", s?.teamB || "Команда B");
+  renderStandings(computeStandings(serverMatches, s?.teamA || "Команда A", s?.teamB || "Команда B"));
+
+  // сохраним актуальное в localStorage
+  saveMatchesLocal(serverMatches);
+
+  const st = $("statusLine");
+  if(st) st.textContent = `Обновлено • сыграно матчей: ${played.length}`;
+});
 
   // Rosters
   const rA = Array.isArray(s?.rosterA) ? s.rosterA : [];
