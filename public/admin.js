@@ -2,20 +2,16 @@ const socket = io();
 const $ = (id) => document.getElementById(id);
 
 const LS_KEY = "padel_hud_state_v1";
-const MATCHES_KEY = "padel_matches_v2"; // новая версия, чтобы не конфликтовать со старым
+const MATCHES_KEY = "padel_matches_v2";
 let state = null;
 
-const DEFAULT_MATCHES = [
-  { id: 1, a: "", b: "", score: "", winner: "" },
-  { id: 2, a: "", b: "", score: "", winner: "" },
-  { id: 3, a: "", b: "", score: "", winner: "" },
-  { id: 4, a: "", b: "", score: "", winner: "" },
-  { id: 5, a: "", b: "", score: "", winner: "" },
-  { id: 6, a: "", b: "", score: "", winner: "" },
-  { id: 7, a: "", b: "", score: "", winner: "" },
-  { id: 8, a: "", b: "", score: "", winner: "" },
-  { id: 9, a: "", b: "", score: "", winner: "" },
-];
+const DEFAULT_MATCHES = Array.from({ length: 9 }, (_, i) => ({
+  id: i + 1,
+  a: "",
+  b: "",
+  score: "",
+  winner: ""
+}));
 
 function clamp(n, min, max) {
   n = Number(n);
@@ -29,6 +25,21 @@ function normalizeTournament(a, b, N) {
   b = clamp(b, 0, N);
   if (a + b > N) b = Math.max(0, N - a);
   return { N, a, b };
+}
+
+function parseScore(score){
+  if(!score) return null;
+  const s = String(score).trim();
+  const m = s.match(/^(\d+)\s*[:\-]\s*(\d+)$/);
+  if(!m) return null;
+  return { a: Number(m[1]), b: Number(m[2]) };
+}
+
+function computeWinnerFromScore(score){
+  const sc = parseScore(score);
+  if(!sc) return "";
+  if(sc.a === sc.b) return "";
+  return sc.a > sc.b ? "A" : "B";
 }
 
 function saveLocal(patch) {
@@ -61,6 +72,14 @@ function getTeamBName() {
   return ($("teamB").value || "Команда B").trim() || "Команда B";
 }
 
+function escapeAttr(s) {
+  return String(s)
+    .replaceAll("&", "&amp;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
+
 function updateTeamRowTitles() {
   const aName = getTeamAName();
   const bName = getTeamBName();
@@ -68,21 +87,15 @@ function updateTeamRowTitles() {
   $("teamRowA").textContent = aName;
   $("teamRowB").textContent = bName;
 
-  // шапка таблицы матчей
   const colA = $("colTeamA");
   const colB = $("colTeamB");
   if (colA) colA.textContent = aName;
   if (colB) colB.textContent = bName;
 
-  // placeholders для всех инпутов матчей
   const aPH = `${aName} (пара/игроки)`;
   const bPH = `${bName} (пара/игроки)`;
-  document.querySelectorAll('input.matchIn[data-k="a"]').forEach((el) => {
-    el.placeholder = aPH;
-  });
-  document.querySelectorAll('input.matchIn[data-k="b"]').forEach((el) => {
-    el.placeholder = bPH;
-  });
+  document.querySelectorAll('input.matchIn[data-k="a"]').forEach((el) => { el.placeholder = aPH; });
+  document.querySelectorAll('input.matchIn[data-k="b"]').forEach((el) => { el.placeholder = bPH; });
 }
 
 function fill(s) {
@@ -95,9 +108,18 @@ function fill(s) {
   $("a3").value = s.a3 ?? 0;
   $("b3").value = s.b3 ?? 0;
 
-  if ($("showHud")) {
-    $("showHud").checked = (s.hudVisible ?? true);
-  }
+  if ($("showHud")) $("showHud").checked = (s.hudVisible ?? true);
+
+  const rA = Array.isArray(s.rosterA) ? s.rosterA : ["","",""];
+  const rB = Array.isArray(s.rosterB) ? s.rosterB : ["","",""];
+
+  if ($("playerA1")) $("playerA1").value = rA[0] ?? "";
+  if ($("playerA2")) $("playerA2").value = rA[1] ?? "";
+  if ($("playerA3")) $("playerA3").value = rA[2] ?? "";
+
+  if ($("playerB1")) $("playerB1").value = rB[0] ?? "";
+  if ($("playerB2")) $("playerB2").value = rB[1] ?? "";
+  if ($("playerB3")) $("playerB3").value = rB[2] ?? "";
 
   updateTeamRowTitles();
 }
@@ -125,6 +147,17 @@ function buildPatchFromUI() {
     a3: norm.a,
     b3: norm.b,
     hudVisible: $("showHud") ? $("showHud").checked : true,
+
+    rosterA: [
+      ($("playerA1")?.value || "").trim(),
+      ($("playerA2")?.value || "").trim(),
+      ($("playerA3")?.value || "").trim(),
+    ],
+    rosterB: [
+      ($("playerB1")?.value || "").trim(),
+      ($("playerB2")?.value || "").trim(),
+      ($("playerB3")?.value || "").trim(),
+    ],
   };
 }
 
@@ -159,7 +192,7 @@ function applyDelta(team, delta) {
   socket.emit("setState", patch);
 }
 
-// ===== Matches rendering =====
+// ===== Matches =====
 
 function normalizeMatches(arr) {
   if (!Array.isArray(arr) || !arr.length) return DEFAULT_MATCHES.map((m) => ({ ...m }));
@@ -168,7 +201,7 @@ function normalizeMatches(arr) {
     a: (m.a ?? "").trim(),
     b: (m.b ?? "").trim(),
     score: (m.score ?? "").trim(),
-    winner: (m.winner === "A" || m.winner === "B") ? m.winner : ""
+    winner: "" // победителя считаем автоматически
   }));
 }
 
@@ -211,19 +244,10 @@ function renderAdminMatches(matches) {
           value="${escapeAttr(m.score || "")}"
         />
       </td>
-
-      <td>
-        <select data-k="winner" data-i="${idx}" class="matchIn">
-          <option value="" ${!m.winner ? "selected" : ""}>—</option>
-          <option value="A" ${m.winner === "A" ? "selected" : ""}>A</option>
-          <option value="B" ${m.winner === "B" ? "selected" : ""}>B</option>
-        </select>
-      </td>
     `;
     body.appendChild(tr);
   });
 
-  // сохранить в память при любом изменении, чтобы не терять при F5
   body.querySelectorAll(".matchIn").forEach((el) => {
     el.addEventListener("input", () => {
       window.__matches = collectAdminMatches();
@@ -253,15 +277,13 @@ function collectAdminMatches() {
     next[i][k] = String(el.value ?? "").trim();
   });
 
-  return normalizeMatches(next);
-}
+  const norm = normalizeMatches(next);
 
-function escapeAttr(s) {
-  return String(s)
-    .replaceAll("&", "&amp;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;");
+  // ✅ winner автоматически по score
+  return norm.map(m => ({
+    ...m,
+    winner: computeWinnerFromScore(m.score)
+  }));
 }
 
 // ===== Socket =====
@@ -273,7 +295,6 @@ socket.on("connect", () => {
 socket.on("state", (s) => {
   state = s;
 
-  // восстановление state при рестарте
   const local = loadLocal();
   const looksReset = (Number(s?.a3 ?? 0) === 0 && Number(s?.b3 ?? 0) === 0);
 
@@ -285,9 +306,9 @@ socket.on("state", (s) => {
   fill(s);
   saveLocal(buildPatchFromUI());
 
-  // matches init
   const serverMatches = normalizeMatches(s?.matches);
-  const localMatches = normalizeMatches(loadMatchesLocal());
+  const localMatchesRaw = loadMatchesLocal();
+  const localMatches = localMatchesRaw ? normalizeMatches(localMatchesRaw) : null;
   const useMatches = (localMatches && localMatches.length) ? localMatches : serverMatches;
 
   window.__matches = useMatches;
@@ -312,7 +333,6 @@ $("bMinus").addEventListener("click", () => applyDelta("B", -1));
 ["teamA", "teamB"].forEach((id) => {
   $(id).addEventListener("input", () => {
     updateTeamRowTitles();
-    // обновляем таблицу матчей, чтобы плейсхолдеры/шапка обновились сразу
     if (window.__matches) renderAdminMatches(window.__matches);
   });
   $(id).addEventListener("change", emitAll);
@@ -322,9 +342,13 @@ $("bMinus").addEventListener("click", () => applyDelta("B", -1));
   $(id).addEventListener("change", emitAll);
 });
 
-if ($("showHud")) {
-  $("showHud").addEventListener("change", emitAll);
-}
+["playerA1","playerA2","playerA3","playerB1","playerB2","playerB3"].forEach((id)=>{
+  const el = $(id);
+  if(!el) return;
+  el.addEventListener("change", emitAll);
+});
+
+if ($("showHud")) $("showHud").addEventListener("change", emitAll);
 
 // превью toggle
 const previewBox = $("previewBox");
@@ -346,7 +370,6 @@ if (saveBtn) {
     window.__matches = matches;
     saveMatchesLocal(matches);
 
-    // отправляем на сервер (чтобы results.html видел это)
     socket.emit("setMatches", matches);
 
     const hintEl = $("matchesSavedHint");
@@ -366,7 +389,7 @@ if (clearBtn) {
     const cleared = normalizeMatches(
       (window.__matches && window.__matches.length ? window.__matches : DEFAULT_MATCHES)
         .map((m) => ({ ...m, score: "", winner: "" }))
-    );
+    ).map(m => ({...m, winner: ""}));
 
     window.__matches = cleared;
     saveMatchesLocal(cleared);

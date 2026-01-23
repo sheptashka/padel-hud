@@ -9,6 +9,13 @@ function parseScore(score){
   return { a: Number(m[1]), b: Number(m[2]) };
 }
 
+function computeWinnerFromScore(score){
+  const sc = parseScore(score);
+  if(!sc) return "";
+  if(sc.a === sc.b) return "";
+  return sc.a > sc.b ? "A" : "B";
+}
+
 function normalizeMatches(matchesFromState){
   if(!Array.isArray(matchesFromState)) return [];
   return matchesFromState.map((m, i) => ({
@@ -16,16 +23,12 @@ function normalizeMatches(matchesFromState){
     a: String(m.a ?? "").trim(),
     b: String(m.b ?? "").trim(),
     score: String(m.score ?? "").trim(),
-    winner: (m.winner === "A" || m.winner === "B") ? m.winner : ""
   }));
 }
 
 function isPlayed(m){
-  // "сыгранный" = есть валидный счет + выбран победитель
-  const sc = parseScore(m.score);
-  if(!sc) return false;
-  if(m.winner !== "A" && m.winner !== "B") return false;
-  return true;
+  // "сыгранный" = есть валидный счет
+  return !!parseScore(m.score);
 }
 
 function setHeaderNames(teamA, teamB){
@@ -33,6 +36,14 @@ function setHeaderNames(teamA, teamB){
   const colB = $("colResB");
   if(colA) colA.textContent = teamA;
   if(colB) colB.textContent = teamB;
+}
+
+function escapeHtml(s){
+  return String(s)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;");
 }
 
 function renderMatches(matches, teamA, teamB){
@@ -48,8 +59,11 @@ function renderMatches(matches, teamA, teamB){
   }
 
   matches.forEach((m) => {
-    const winnerName = (m.winner === "A") ? teamA : teamB;
-    const winHtml = `<span class="badgeWin">${escapeHtml(winnerName)}</span>`;
+    const w = computeWinnerFromScore(m.score);
+    const winnerName = (w === "A") ? teamA : (w === "B" ? teamB : "—");
+    const winHtml = (winnerName === "—")
+      ? `<span class="mutedCell">—</span>`
+      : `<span class="badgeWin">${escapeHtml(winnerName)}</span>`;
 
     const tr = document.createElement("tr");
     tr.innerHTML = `
@@ -71,13 +85,13 @@ function computeStandings(playedMatches, teamA, teamB){
     const sc = parseScore(m.score);
     if(!sc) continue;
 
-    // по нашему формату счет "A:B" (колонка A — команда A, колонка B — команда B)
     A.for += sc.a; A.against += sc.b;
     B.for += sc.b; B.against += sc.a;
 
-    if(m.winner === "A"){
+    const w = computeWinnerFromScore(m.score);
+    if(w === "A"){
       A.wins += 1; B.losses += 1;
-    } else if(m.winner === "B"){
+    } else if(w === "B"){
       B.wins += 1; A.losses += 1;
     }
   }
@@ -85,7 +99,6 @@ function computeStandings(playedMatches, teamA, teamB){
   A.diff = A.for - A.against;
   B.diff = B.for - B.against;
 
-  // сортировка: победы, разница, забито
   const rows = [A, B];
   rows.sort((x,y)=>{
     if(y.wins !== x.wins) return y.wins - x.wins;
@@ -115,12 +128,24 @@ function renderStandings(rows){
   });
 }
 
-function escapeHtml(s){
-  return String(s)
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;");
+function renderRoster(listId, arr){
+  const ul = $(listId);
+  if(!ul) return;
+  ul.innerHTML = "";
+
+  const clean = (arr || []).map(x => String(x||"").trim()).filter(Boolean);
+  if(clean.length === 0){
+    const li = document.createElement("li");
+    li.className = "muted";
+    li.textContent = "—";
+    ul.appendChild(li);
+    return;
+  }
+  clean.forEach(p=>{
+    const li = document.createElement("li");
+    li.textContent = p;
+    ul.appendChild(li);
+  });
 }
 
 socket.on("connect", ()=>{
@@ -132,8 +157,17 @@ socket.on("connect", ()=>{
 socket.on("state", (s)=>{
   const teamA = String(s?.teamA ?? "Команда A").trim() || "Команда A";
   const teamB = String(s?.teamB ?? "Команда B").trim() || "Команда B";
-
   setHeaderNames(teamA, teamB);
+
+  // rosters
+  const rA = Array.isArray(s?.rosterA) ? s.rosterA : [];
+  const rB = Array.isArray(s?.rosterB) ? s.rosterB : [];
+  const tA = $("rosterTeamAName");
+  const tB = $("rosterTeamBName");
+  if(tA) tA.textContent = teamA;
+  if(tB) tB.textContent = teamB;
+  renderRoster("rosterA", rA);
+  renderRoster("rosterB", rB);
 
   const matchesAll = normalizeMatches(s?.matches);
   const played = matchesAll.filter(isPlayed);

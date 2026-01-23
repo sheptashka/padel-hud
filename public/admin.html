@@ -56,6 +56,42 @@
         </div>
       </div>
 
+      <!-- ===== Rosters ===== -->
+      <div class="card" style="margin-top:14px;">
+        <h2 style="margin:0 0 10px; font-size:16px;">Составы команд</h2>
+
+        <div class="grid2">
+          <div>
+            <label>Состав Команды A — игрок 1</label>
+            <input id="playerA1" placeholder="Игрок A1" />
+          </div>
+          <div>
+            <label>Состав Команды B — игрок 1</label>
+            <input id="playerB1" placeholder="Игрок B1" />
+          </div>
+
+          <div>
+            <label>Состав Команды A — игрок 2</label>
+            <input id="playerA2" placeholder="Игрок A2" />
+          </div>
+          <div>
+            <label>Состав Команды B — игрок 2</label>
+            <input id="playerB2" placeholder="Игрок B2" />
+          </div>
+
+          <div>
+            <label>Состав Команды A — игрок 3</label>
+            <input id="playerA3" placeholder="Игрок A3" />
+          </div>
+          <div>
+            <label>Состав Команды B — игрок 3</label>
+            <input id="playerB3" placeholder="Игрок B3" />
+          </div>
+        </div>
+
+        <div class="hint">Эти составы будут показаны на странице итогов справа.</div>
+      </div>
+
       <div class="teamsPanel compact">
         <div class="teamRow compact">
           <div class="teamRowTitle" id="teamRowA">Команда A</div>
@@ -90,7 +126,7 @@
       <!-- ===== Matches ===== -->
       <div class="card" style="margin-top:14px;">
         <h2 style="margin:0 0 10px; font-size:16px;">Матчи турнира (3×3)</h2>
-        <div class="hint">Заполняй пары/игроков (опционально), вводи счёт вида <b>21:17</b> и выбирай победителя A/B. Итоги появятся на /results.html.</div>
+        <div class="hint">Заполняй пары/игроков (опционально), вводи счёт вида <b>21:17</b>. Победитель определяется автоматически по счёту.</div>
 
         <div class="matchesWrap">
           <table class="matchesTable" style="min-width:720px;">
@@ -100,7 +136,6 @@
                 <th id="colTeamA">Команда A</th>
                 <th id="colTeamB">Команда B</th>
                 <th style="width:140px">Счёт</th>
-                <th style="width:140px">Победа</th>
               </tr>
             </thead>
 

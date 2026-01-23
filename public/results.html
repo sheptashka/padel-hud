@@ -12,27 +12,49 @@
     <h1>Итоги турнира</h1>
     <div id="statusLine" class="hint">Подключаемся…</div>
 
-    <div class="card" style="margin-top:12px;">
-      <h2 style="margin:0 0 10px; font-size:16px;">Сыгранные матчи</h2>
+    <div class="resultsGrid" style="margin-top:12px;">
 
-      <div class="matchesWrap">
-        <table class="matchesTable">
-          <thead>
-            <tr>
-              <th style="width:64px">Матч</th>
-              <th id="colResA" class="left">Команда A</th>
-              <th id="colResB" class="left">Команда B</th>
-              <th style="width:140px">Счёт</th>
-              <th style="width:140px">Победа</th>
-            </tr>
-          </thead>
-          <tbody id="matchesBody"></tbody>
-        </table>
+      <!-- LEFT: Matches -->
+      <div class="card">
+        <h2 style="margin:0 0 10px; font-size:16px;">Сыгранные матчи</h2>
+
+        <div class="matchesWrap">
+          <table class="matchesTable">
+            <thead>
+              <tr>
+                <th style="width:64px">Матч</th>
+                <th id="colResA" class="left">Команда A</th>
+                <th id="colResB" class="left">Команда B</th>
+                <th style="width:140px">Счёт</th>
+                <th style="width:200px">Победа</th>
+              </tr>
+            </thead>
+            <tbody id="matchesBody"></tbody>
+          </table>
+        </div>
+
+        <div class="hint" style="margin-top:10px;">
+          Показываются только матчи, где введён корректный счёт (например 21:17).
+        </div>
       </div>
 
-      <div class="hint" style="margin-top:10px;">
-        Показываются только матчи, где введён корректный счёт и выбран победитель.
+      <!-- RIGHT: Rosters -->
+      <div class="card">
+        <h2 style="margin:0 0 10px; font-size:16px;">Составы команд</h2>
+
+        <div class="rosterBox">
+          <div class="rosterTeam">
+            <div class="rosterTitle" id="rosterTeamAName">Команда A</div>
+            <ul class="rosterList" id="rosterA"></ul>
+          </div>
+
+          <div class="rosterTeam">
+            <div class="rosterTitle" id="rosterTeamBName">Команда B</div>
+            <ul class="rosterList" id="rosterB"></ul>
+          </div>
+        </div>
       </div>
+
     </div>
 
     <div class="card" style="margin-top:12px;">
@@ -44,10 +66,10 @@
             <tr>
               <th style="width:64px">#</th>
               <th class="left">Команда</th>
-              <th style="width:110px">Победы</th>
-              <th style="width:130px">Поражения</th>
-              <th style="width:160px">Очки</th>
-              <th style="width:120px">Разница</th>
+              <th style="width:120px">Победы</th>
+              <th style="width:140px">Поражения</th>
+              <th style="width:180px">Очки</th>
+              <th style="width:140px">Разница</th>
             </tr>
           </thead>
           <tbody id="standingsBody"></tbody>
@@ -58,6 +80,7 @@
         Очки = забито:пропущено, Разница = забито − пропущено.
       </div>
     </div>
+
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
