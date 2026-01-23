@@ -541,3 +541,103 @@ body.resultsLight h1{
   .tableWrap{ max-height: 46vh; }
   .clip{ max-width: 70vw; }
 }
+
+
+/* ===================== RESULTS (plain, like first version) ===================== */
+body.resultsPlain{
+  margin:0;
+  background:#fff;
+  color:#111;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+.resultsPagePlain{
+  max-width: 1200px;
+  margin: 18px auto;
+  padding: 0 14px 18px;
+}
+
+.resultsPagePlain h1{
+  margin: 0 0 6px;
+  font-size: 34px;
+  font-weight: 700;
+}
+
+.statusLinePlain{
+  margin: 0 0 14px;
+  font-size: 14px;
+  color: #666;
+}
+
+.resultsPagePlain h2{
+  margin: 14px 0 6px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.smallHintPlain{
+  font-size: 13px;
+  color: #777;
+  margin: 0 0 8px;
+}
+
+.tableWrapPlain{
+  overflow:auto;
+}
+
+.plainTable{
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.plainTable th,
+.plainTable td{
+  padding: 8px 10px;
+  border-bottom: 1px solid #e6e6e6;
+  text-align: center;
+  vertical-align: top;
+}
+
+.plainTable th{
+  font-weight: 700;
+}
+
+.plainTable .left{
+  text-align: left;
+}
+
+.clipPlain{
+  max-width: 420px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mutedCellPlain{
+  color:#777;
+  text-align:left;
+}
+
+.rostersPlain{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-top: 6px;
+}
+
+.rosterTitlePlain{
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.rosterListPlain{
+  margin: 0;
+  padding-left: 18px;
+  color:#111;
+}
+
+@media (max-width: 900px){
+  .rostersPlain{ grid-template-columns: 1fr; }
+  .clipPlain{ max-width: 70vw; }
+}

@@ -52,10 +52,27 @@ function renderMatches(playedMatches, teamA, teamB){
 
   if(playedMatches.length === 0){
     const tr = document.createElement("tr");
-    tr.innerHTML = `<td colspan="5" class="mutedCell">Пока нет сыгранных матчей</td>`;
+    tr.innerHTML = `<td colspan="5" class="mutedCellPlain">Пока нет сыгранных матчей</td>`;
     body.appendChild(tr);
     return;
   }
+
+  playedMatches.forEach((m) => {
+    const w = computeWinnerFromScore(m.score);
+    const winnerName = (w === "A") ? teamA : (w === "B" ? teamB : "—");
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${m.id}</td>
+      <td class="left clipPlain">${escapeHtml(m.a || "—")}</td>
+      <td class="left clipPlain">${escapeHtml(m.b || "—")}</td>
+      <td>${escapeHtml(m.score)}</td>
+      <td class="left">${escapeHtml(winnerName)}</td>
+    `;
+    body.appendChild(tr);
+  });
+}
+
 
   playedMatches.forEach((m) => {
     const w = computeWinnerFromScore(m.score);

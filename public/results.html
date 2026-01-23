@@ -7,80 +7,58 @@
   <link rel="stylesheet" href="/style.css" />
 </head>
 
-<body class="resultsLight">
-  <div class="resultsPage">
+<body class="resultsPlain">
+  <div class="resultsPagePlain">
     <h1>Итоги турнира</h1>
-    <div id="statusLine" class="statusLine">Загружаем…</div>
+    <div id="statusLine" class="statusLinePlain">Загружаем…</div>
 
-    <div class="resultsLayout">
+    <h2>Сыгранные матчи</h2>
+    <div class="smallHintPlain">Показываются только матчи с корректным счётом (например 21:17).</div>
 
-      <!-- LEFT: played matches -->
-      <section class="panel">
-        <div class="panelHead">
-          <h2>Сыгранные матчи</h2>
-          <div class="smallHint">Показываются только матчи с корректным счётом (например 21:17).</div>
-        </div>
-
-        <div class="tableWrap">
-          <table class="rTable">
-            <thead>
-              <tr>
-                <th style="width:56px">#</th>
-                <th id="colResA" class="left">Команда A</th>
-                <th id="colResB" class="left">Команда B</th>
-                <th style="width:96px">Счёт</th>
-                <th style="width:140px">Победа</th>
-              </tr>
-            </thead>
-            <tbody id="matchesBody"></tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- RIGHT: rosters -->
-      <aside class="panel">
-        <div class="panelHead">
-          <h2>Составы команд</h2>
-        </div>
-
-        <div class="rosters">
-          <div class="roster">
-            <div class="rosterTitle" id="rosterTeamAName">Команда A</div>
-            <ul class="rosterList" id="rosterA"></ul>
-          </div>
-
-          <div class="roster">
-            <div class="rosterTitle" id="rosterTeamBName">Команда B</div>
-            <ul class="rosterList" id="rosterB"></ul>
-          </div>
-        </div>
-      </aside>
-
+    <div class="tableWrapPlain">
+      <table class="plainTable">
+        <thead>
+          <tr>
+            <th style="width:56px">Матч</th>
+            <th id="colResA" class="left">Команда A</th>
+            <th id="colResB" class="left">Команда B</th>
+            <th style="width:96px">Счёт</th>
+            <th style="width:160px">Победа</th>
+          </tr>
+        </thead>
+        <tbody id="matchesBody"></tbody>
+      </table>
     </div>
 
-    <!-- standings -->
-    <section class="panel" style="margin-top:10px;">
-      <div class="panelHead">
-        <h2>Таблица</h2>
-        <div class="smallHint">Очки = забито:пропущено, Разница = забито − пропущено.</div>
+    <h2 style="margin-top:18px;">Таблица</h2>
+    <div class="tableWrapPlain">
+      <table class="plainTable">
+        <thead>
+          <tr>
+            <th style="width:56px">#</th>
+            <th class="left">Команда</th>
+            <th style="width:90px">Победы</th>
+            <th style="width:100px">Поражения</th>
+            <th style="width:120px">Очки</th>
+            <th style="width:90px">Разница</th>
+          </tr>
+        </thead>
+        <tbody id="standingsBody"></tbody>
+      </table>
+    </div>
+
+    <h2 style="margin-top:18px;">Составы команд</h2>
+    <div class="rostersPlain">
+      <div>
+        <div id="rosterTeamAName" class="rosterTitlePlain">Команда A</div>
+        <ul id="rosterA" class="rosterListPlain"></ul>
       </div>
 
-      <div class="tableWrap">
-        <table class="rTable">
-          <thead>
-            <tr>
-              <th style="width:56px">#</th>
-              <th class="left">Команда</th>
-              <th style="width:90px">Победы</th>
-              <th style="width:100px">Поражения</th>
-              <th style="width:120px">Очки</th>
-              <th style="width:90px">Разница</th>
-            </tr>
-          </thead>
-          <tbody id="standingsBody"></tbody>
-        </table>
+      <div>
+        <div id="rosterTeamBName" class="rosterTitlePlain">Команда B</div>
+        <ul id="rosterB" class="rosterListPlain"></ul>
       </div>
-    </section>
+    </div>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
