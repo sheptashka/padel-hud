@@ -1,15 +1,43 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8" />
-  <title>Padel — Итоги турнира</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
 <body class="admin">
+  <div class="container">
+    <h1 style="margin:0 0 14px;">Итоги турнира</h1>
 
-  <h1>Итоги турнира</h1>
-  <p>Страница в разработке</p>
+    <div class="card">
+      <div class="hint" id="statusLine">Подключение…</div>
 
-  <script src="results.js"></script>
+      <table class="matchesTable">
+        <thead>
+          <tr>
+            <th style="width:64px">Матч</th>
+            <th>Пара A</th>
+            <th>Пара B</th>
+            <th style="width:120px">Счёт</th>
+            <th style="width:120px">Победа</th>
+          </tr>
+        </thead>
+        <tbody id="matchesBody"></tbody>
+      </table>
+
+      <div style="height:14px"></div>
+
+      <h2 style="margin:0 0 10px; font-size:16px;">Таблица</h2>
+      <table class="matchesTable">
+        <thead>
+          <tr>
+            <th style="width:64px">#</th>
+            <th style="text-align:left">Команда</th>
+            <th style="width:110px">Победы</th>
+            <th style="width:110px">Поражения</th>
+            <th style="width:140px">Очки</th>
+            <th style="width:120px">Разница</th>
+          </tr>
+        </thead>
+        <tbody id="standingsBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- socket.io нужен, чтобы читать state с сервера -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/results.js"></script>
 </body>
-</html>
