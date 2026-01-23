@@ -277,7 +277,8 @@ if (previewBox && showPreview) {
 
 const saveBtn = document.getElementById("saveMatches");
 if(saveBtn){
-  saveBtn.addEventListener("click", () => {
+  saveBtn.addEventListener("click", (e) => {
+  e.preventDefault();
     const matches = collectAdminMatches();
     window.__matches = matches;
     saveMatchesLocal(matches);
@@ -287,7 +288,9 @@ if(saveBtn){
 
 const clearBtn = document.getElementById("clearMatches");
 if(clearBtn){
-  clearBtn.addEventListener("click", () => {
+  clearBtn.addEventListener("click", (e) => {
+  e.preventDefault();
+
     const cleared = (window.__matches || DEFAULT_MATCHES).map((m) => ({...m, score:"", winner:""}));
     window.__matches = cleared;
     saveMatchesLocal(cleared);
