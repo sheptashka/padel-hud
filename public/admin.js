@@ -4,6 +4,33 @@ const $ = (id) => document.getElementById(id);
 const LS_KEY = "padel_hud_state_v1";
 let state = null;
 
+const MATCHES_KEY = "padel_matches_v1";
+
+const DEFAULT_MATCHES = [
+  { id: 1, a: "A1+A2", b: "B1+B2", score: "", winner: "" },
+  { id: 2, a: "A1+A2", b: "B1+B3", score: "", winner: "" },
+  { id: 3, a: "A1+A2", b: "B2+B3", score: "", winner: "" },
+  { id: 4, a: "A1+A3", b: "B1+B2", score: "", winner: "" },
+  { id: 5, a: "A1+A3", b: "B1+B3", score: "", winner: "" },
+  { id: 6, a: "A1+A3", b: "B2+B3", score: "", winner: "" },
+  { id: 7, a: "A2+A3", b: "B1+B2", score: "", winner: "" },
+  { id: 8, a: "A2+A3", b: "B1+B3", score: "", winner: "" },
+  { id: 9, a: "A2+A3", b: "B2+B3", score: "", winner: "" },
+];
+
+function loadMatchesLocal(){
+  try{
+    const raw = localStorage.getItem(MATCHES_KEY);
+    if(!raw) return null;
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr : null;
+  }catch(_){ return null; }
+}
+function saveMatchesLocal(matches){
+  try{ localStorage.setItem(MATCHES_KEY, JSON.stringify(matches)); }catch(_){}
+}
+
+
 function clamp(n, min, max) {
   n = Number(n);
   if (!Number.isFinite(n)) n = 0;
@@ -41,6 +68,56 @@ function fill(s) {
     $("showHud").checked = (s.hudVisible ?? true);
   }
 }
+
+function renderAdminMatches(matches){
+  const body = document.getElementById("adminMatchesBody");
+  if(!body) return;
+  body.innerHTML = "";
+
+  (matches || []).forEach((m, idx) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${idx+1}</td>
+      <td><input data-k="a" data-i="${idx}" class="matchIn" value="${m.a || ""}" /></td>
+      <td><input data-k="b" data-i="${idx}" class="matchIn" value="${m.b || ""}" /></td>
+      <td><input data-k="score" data-i="${idx}" class="matchIn" placeholder="21:17" value="${m.score || ""}" /></td>
+      <td>
+        <select data-k="winner" data-i="${idx}" class="matchIn">
+          <option value="" ${!m.winner ? "selected":""}>—</option>
+          <option value="A" ${m.winner==="A"?"selected":""}>A</option>
+          <option value="B" ${m.winner==="B"?"selected":""}>B</option>
+        </select>
+      </td>
+    `;
+    body.appendChild(tr);
+  });
+}
+
+function collectAdminMatches(){
+  const body = document.getElementById("adminMatchesBody");
+  if(!body) return DEFAULT_MATCHES;
+
+  // начинаем с текущего сохранённого массива, чтобы не терять id
+  const base = (window.__matches && Array.isArray(window.__matches)) ? window.__matches : DEFAULT_MATCHES;
+  const next = base.map(x => ({...x}));
+
+  body.querySelectorAll(".matchIn").forEach((el) => {
+    const i = Number(el.getAttribute("data-i"));
+    const k = el.getAttribute("data-k");
+    if(!Number.isFinite(i) || !next[i]) return;
+    next[i][k] = String(el.value ?? "").trim();
+  });
+
+  // лёгкая нормализация
+  return next.map((m, i) => ({
+    id: m.id ?? (i+1),
+    a: m.a || "",
+    b: m.b || "",
+    score: m.score || "",
+    winner: (m.winner === "A" || m.winner === "B") ? m.winner : ""
+  }));
+}
+
 
 function buildPatchFromUI() {
   const rawN = $("maxPoints").value;
@@ -145,6 +222,19 @@ socket.on("state", (s) => {
     a3: s.a3 ?? 0,
     b3: s.b3 ?? 0
   });
+  // --- matches for results page ---
+  const serverMatches = Array.isArray(s?.matches) && s.matches.length ? s.matches : null;
+  const localMatches = loadMatchesLocal();
+  const useMatches = serverMatches || localMatches || DEFAULT_MATCHES;
+
+  window.__matches = useMatches;
+  renderAdminMatches(useMatches);
+
+  // если сервер пустой, но локально есть — отправим на сервер один раз
+  if(!serverMatches && localMatches){
+    socket.emit("setMatches", localMatches);
+  }
+
 });
 
 // кнопки
@@ -184,3 +274,25 @@ if (previewBox && showPreview) {
     previewBox.classList.toggle("show", e.target.checked);
   });
 }
+
+const saveBtn = document.getElementById("saveMatches");
+if(saveBtn){
+  saveBtn.addEventListener("click", () => {
+    const matches = collectAdminMatches();
+    window.__matches = matches;
+    saveMatchesLocal(matches);
+    socket.emit("setMatches", matches);
+  });
+}
+
+const clearBtn = document.getElementById("clearMatches");
+if(clearBtn){
+  clearBtn.addEventListener("click", () => {
+    const cleared = (window.__matches || DEFAULT_MATCHES).map((m) => ({...m, score:"", winner:""}));
+    window.__matches = cleared;
+    saveMatchesLocal(cleared);
+    renderAdminMatches(cleared);
+    socket.emit("setMatches", cleared);
+  });
+}
+

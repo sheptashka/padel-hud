@@ -85,6 +85,30 @@
         <button class="primary" id="apply">Применить</button>
         <button class="danger" id="reset">Сбросить счет</button>
       </div>
+<div class="card" style="margin-top:14px;">
+  <h2 style="margin:0 0 10px; font-size:16px;">Матчи турнира (3×3)</h2>
+  <div class="hint">Вводи счёт вида <b>21:17</b> и выбирай победителя A/B. Результаты появятся на странице итогов.</div>
+
+  <div style="margin-top:10px; overflow:auto;">
+    <table class="matchesTable" style="min-width:720px;">
+      <thead>
+        <tr>
+          <th style="width:64px">Матч</th>
+          <th>Пара A</th>
+          <th>Пара B</th>
+          <th style="width:140px">Счёт</th>
+          <th style="width:140px">Победа</th>
+        </tr>
+      </thead>
+      <tbody id="adminMatchesBody"></tbody>
+    </table>
+  </div>
+
+  <div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap;">
+    <button id="saveMatches" class="btn primary">Сохранить матчи</button>
+    <button id="clearMatches" class="btn">Очистить результаты</button>
+  </div>
+</div>
 
       <div class="previewWrap">
         <div class="previewHead">
