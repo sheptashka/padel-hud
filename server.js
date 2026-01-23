@@ -1,12 +1,5 @@
 const express = require("express");
 const http = require("http");
-const { Server } = require("socket.io");
-const path = require("path");
-
-const app = express();
-const server = http.createServer(app);
-const io = new Server(server);
-
 const DEFAULT_MATCHES = [
   { id: 1, a: "A1+A2", b: "B1+B2", score: "", winner: "" },
   { id: 2, a: "A1+A2", b: "B1+B3", score: "", winner: "" },
@@ -19,6 +12,25 @@ const DEFAULT_MATCHES = [
   { id: 9, a: "A2+A3", b: "B2+B3", score: "", winner: "" },
 ];
 
+function normalizeMatches(input) {
+  const arr = Array.isArray(input) ? input : [];
+  const base = arr.length ? arr : DEFAULT_MATCHES;
+
+  return base.slice(0, 9).map((m, i) => ({
+    id: Number(m?.id ?? (i + 1)),
+    a: String(m?.a ?? "").trim(),
+    b: String(m?.b ?? "").trim(),
+    score: String(m?.score ?? "").trim(),
+    winner: (m?.winner === "A" || m?.winner === "B") ? m.winner : "",
+  }));
+}
+
+const { Server } = require("socket.io");
+const path = require("path");
+
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
@@ -46,6 +58,16 @@ app.get("/", (req, res) => {
 app.get("/health", (req, res) => res.json({ ok: true }));
 
 io.on("connection", (socket) => {
+socket.on("getState", () => {
+  socket.emit("state", state);
+});
+
+socket.on("setMatches", (matches) => {
+  state.matches = normalizeMatches(matches);
+  io.emit("matches", state.matches);
+  io.emit("state", state);
+});
+
   socket.emit("state", state);
 
   socket.on("setState", (patch) => {
