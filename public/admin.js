@@ -17,6 +17,18 @@ const DEFAULT_MATCHES = [
   { id: 8, a: "A2+A3", b: "B1+B3", score: "", winner: "" },
   { id: 9, a: "A2+A3", b: "B2+B3", score: "", winner: "" },
 ];
+let lastTeamA = null;
+let lastTeamB = null;
+
+function isDefaultPairValue(v){
+  const s = String(v || "").trim();
+  if (!s) return true;
+  // дефолт из шаблона (A1+A2, B1+B3 и т.п.)
+  if (/^[AB]\d\+[AB]?\d$/i.test(s)) return true;
+  // иногда шаблон как "A1+A2" (с плюсом) — уже покрыто
+  return false;
+}
+
 
 function loadMatchesLocal(){
   try{
@@ -51,6 +63,34 @@ function updateTeamRowTitles() {
   $("teamRowA").textContent = aName;
   $("teamRowB").textContent = bName;
 }
+
+function autofillPairsFromTeams(force = false){
+  const aName = ($("teamA")?.value || "").trim();
+  const bName = ($("teamB")?.value || "").trim();
+  if (!aName || !bName) return;
+
+  const base = (window.__matches && Array.isArray(window.__matches)) ? window.__matches : (loadMatchesLocal() || DEFAULT_MATCHES);
+  const next = base.map(m => ({ ...m }));
+
+  next.forEach(m => {
+    const aWas = String(m.a || "").trim();
+    const bWas = String(m.b || "").trim();
+
+    const canReplaceA = force || isDefaultPairValue(aWas) || (lastTeamA && aWas === lastTeamA);
+    const canReplaceB = force || isDefaultPairValue(bWas) || (lastTeamB && bWas === lastTeamB);
+
+    if (canReplaceA) m.a = aName;
+    if (canReplaceB) m.b = bName;
+  });
+
+  lastTeamA = aName;
+  lastTeamB = bName;
+
+  window.__matches = next;
+  saveMatchesLocal(next);
+  renderAdminMatches(next);
+}
+
 
 function fill(s) {
   $("teamA").value = s.teamA ?? "";
@@ -129,6 +169,20 @@ function collectAdminMatches(){
     winner: (m.winner === "A" || m.winner === "B") ? m.winner : ""
   }));
 }
+
+function applyTeamNamesToAllMatches(matches){
+  const teamAName = ($("teamA")?.value || "Команда A").trim() || "Команда A";
+  const teamBName = ($("teamB")?.value || "Команда B").trim() || "Команда B";
+
+  return (matches || []).map((m, i) => ({
+    id: m.id ?? (i+1),
+    a: teamAName,
+    b: teamBName,
+    score: String(m.score || "").trim(),
+    winner: (m.winner === "A" || m.winner === "B") ? m.winner : ""
+  }));
+}
+
 
 
 function buildPatchFromUI() {
@@ -241,6 +295,12 @@ socket.on("state", (s) => {
     a3: s.a3 ?? 0,
     b3: s.b3 ?? 0
   });
+lastTeamA = (s.teamA ?? $("teamA")?.value ?? "").trim() || lastTeamA;
+lastTeamB = (s.teamB ?? $("teamB")?.value ?? "").trim() || lastTeamB;
+
+// после того как ты выбрал useMatches и сделал renderAdminMatches(useMatches)
+setTimeout(() => autofillPairsFromTeams(false), 0);
+
   // --- matches for results page ---
   const serverMatches = Array.isArray(s?.matches) && s.matches.length ? s.matches : null;
   const localMatches = loadMatchesLocal();
@@ -272,9 +332,22 @@ $("bMinus").addEventListener("click", () => applyDelta("B", -1));
 
 // названия команд — сразу в UI + при смене отправляем
 ["teamA", "teamB"].forEach((id) => {
-  $(id).addEventListener("input", updateTeamRowTitles);
-  $(id).addEventListener("change", emitAll);
+  $(id).addEventListener("input", () => {
+
+    updateTeamRowTitles();
+
+window.__matches = applyTeamNamesToAllMatches(collectAdminMatches());
+saveMatchesLocal(window.__matches);
+renderAdminMatches(window.__matches);
+
+    autofillPairsFromTeams(false);
+  });
+  $(id).addEventListener("change", () => {
+    emitAll();
+    autofillPairsFromTeams(false);
+  });
 });
+
 
 // остальные поля — по change
 ["maxPoints", "hudPosition", "hudBg", "a3", "b3"].forEach((id) => {
@@ -300,7 +373,7 @@ if (saveBtn) {
     e.preventDefault();
     e.stopPropagation();
 
-    const matches = collectAdminMatches();
+const matches = applyTeamNamesToAllMatches(collectAdminMatches());
     window.__matches = matches;
     saveMatchesLocal(matches);
 
