@@ -1,17 +1,4 @@
 const socket = io();
-
-const DEFAULT_MATCHES = [
-  ["A1+A2", "B1+B2"],
-  ["A1+A2", "B1+B3"],
-  ["A1+A2", "B2+B3"],
-  ["A1+A3", "B1+B2"],
-  ["A1+A3", "B1+B3"],
-  ["A1+A3", "B2+B3"],
-  ["A2+A3", "B1+B2"],
-  ["A2+A3", "B1+B3"],
-  ["A2+A3", "B2+B3"],
-];
-
 function $(id){ return document.getElementById(id); }
 
 function parseScore(score){
@@ -23,68 +10,70 @@ function parseScore(score){
 }
 
 function normalizeMatches(matchesFromState){
-  // если сервер ещё не хранит matches — показываем дефолтную сетку
-  if(!Array.isArray(matchesFromState) || matchesFromState.length === 0){
-    return DEFAULT_MATCHES.map(([a,b], i) => ({ id:i+1, a, b, score:"", winner:"" }));
-  }
-  // приводим к ожидаемому формату
+  if(!Array.isArray(matchesFromState)) return [];
   return matchesFromState.map((m, i) => ({
     id: m.id ?? (i+1),
-    a: m.a ?? "",
-    b: m.b ?? "",
-    score: m.score ?? "",
-    winner: m.winner ?? ""
+    a: String(m.a ?? "").trim(),
+    b: String(m.b ?? "").trim(),
+    score: String(m.score ?? "").trim(),
+    winner: (m.winner === "A" || m.winner === "B") ? m.winner : ""
   }));
 }
 
-function renderMatches(matches){
+function isPlayed(m){
+  // "сыгранный" = есть валидный счет + выбран победитель
+  const sc = parseScore(m.score);
+  if(!sc) return false;
+  if(m.winner !== "A" && m.winner !== "B") return false;
+  return true;
+}
+
+function setHeaderNames(teamA, teamB){
+  const colA = $("colResA");
+  const colB = $("colResB");
+  if(colA) colA.textContent = teamA;
+  if(colB) colB.textContent = teamB;
+}
+
+function renderMatches(matches, teamA, teamB){
   const body = $("matchesBody");
   if(!body) return;
   body.innerHTML = "";
 
-  matches.forEach((m, idx) => {
-    const winner = (m.winner === "A") ? "A" : ((m.winner === "B") ? "B" : "");
-    const winHtml = winner
-      ? `<span class="badgeWin badge${winner}">${winner}</span>`
-      : `<span class="mutedCell">—</span>`;
+  if(matches.length === 0){
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td colspan="5" class="mutedCell">Пока нет сыгранных матчей</td>`;
+    body.appendChild(tr);
+    return;
+  }
+
+  matches.forEach((m) => {
+    const winnerName = (m.winner === "A") ? teamA : teamB;
+    const winHtml = `<span class="badgeWin">${escapeHtml(winnerName)}</span>`;
 
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${idx+1}</td>
-      <td>${m.a || "—"}</td>
-      <td>${m.b || "—"}</td>
-      <td>${m.score ? m.score : '<span class="mutedCell">—</span>'}</td>
+      <td>${m.id}</td>
+      <td class="left">${escapeHtml(m.a || "—")}</td>
+      <td class="left">${escapeHtml(m.b || "—")}</td>
+      <td>${escapeHtml(m.score)}</td>
       <td>${winHtml}</td>
     `;
     body.appendChild(tr);
   });
 }
 
-function computeStandings(matches){
-  const teams = new Map();
+function computeStandings(playedMatches, teamA, teamB){
+  const A = { team: teamA, wins:0, losses:0, for:0, against:0, diff:0 };
+  const B = { team: teamB, wins:0, losses:0, for:0, against:0, diff:0 };
 
-  function ensure(t){
-    if(!teams.has(t)){
-      teams.set(t, { team:t, wins:0, losses:0, for:0, against:0, diff:0 });
-    }
-    return teams.get(t);
-  }
-
-  for(const m of matches){
-    // ✅ ВАЖНО: теперь m.a и m.b — это НАЗВАНИЯ КОМАНД (TEAM A / TEAM B),
-    // а не "A1+A2". Поэтому просто берём строки как есть.
-    const tA = String(m.a || "").trim();
-    const tB = String(m.b || "").trim();
-    if(!tA || !tB) continue; // чтобы пустые строки не создавали “третью команду”
-
-    const A = ensure(tA);
-    const B = ensure(tB);
-
+  for(const m of playedMatches){
     const sc = parseScore(m.score);
-    if(sc){
-      A.for += sc.a; A.against += sc.b;
-      B.for += sc.b; B.against += sc.a;
-    }
+    if(!sc) continue;
+
+    // по нашему формату счет "A:B" (колонка A — команда A, колонка B — команда B)
+    A.for += sc.a; A.against += sc.b;
+    B.for += sc.b; B.against += sc.a;
 
     if(m.winner === "A"){
       A.wins += 1; B.losses += 1;
@@ -93,16 +82,18 @@ function computeStandings(matches){
     }
   }
 
-  const arr = [...teams.values()].map(x => ({...x, diff: x.for - x.against}));
+  A.diff = A.for - A.against;
+  B.diff = B.for - B.against;
 
-  // сортировка: победы → разница → очки "за"
-  arr.sort((x,y)=>{
+  // сортировка: победы, разница, забито
+  const rows = [A, B];
+  rows.sort((x,y)=>{
     if(y.wins !== x.wins) return y.wins - x.wins;
     if(y.diff !== x.diff) return y.diff - x.diff;
     return y.for - x.for;
   });
 
-  return arr;
+  return rows;
 }
 
 function renderStandings(rows){
@@ -110,18 +101,11 @@ function renderStandings(rows){
   if(!body) return;
   body.innerHTML = "";
 
-  if(rows.length === 0){
-    const tr = document.createElement("tr");
-    tr.innerHTML = `<td colspan="6" class="mutedCell">Нет данных</td>`;
-    body.appendChild(tr);
-    return;
-  }
-
   rows.forEach((r, idx) => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${idx+1}</td>
-      <td class="left"><b>${r.team}</b></td>
+      <td class="left"><b>${escapeHtml(r.team)}</b></td>
       <td>${r.wins}</td>
       <td>${r.losses}</td>
       <td>${r.for}:${r.against}</td>
@@ -131,6 +115,14 @@ function renderStandings(rows){
   });
 }
 
+function escapeHtml(s){
+  return String(s)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;");
+}
+
 socket.on("connect", ()=>{
   const st = $("statusLine");
   if(st) st.textContent = "Подключено. Загружаем данные…";
@@ -138,12 +130,19 @@ socket.on("connect", ()=>{
 });
 
 socket.on("state", (s)=>{
-  const matches = normalizeMatches(s?.matches);
-  renderMatches(matches);
-  renderStandings(computeStandings(matches));
+  const teamA = String(s?.teamA ?? "Команда A").trim() || "Команда A";
+  const teamB = String(s?.teamB ?? "Команда B").trim() || "Команда B";
+
+  setHeaderNames(teamA, teamB);
+
+  const matchesAll = normalizeMatches(s?.matches);
+  const played = matchesAll.filter(isPlayed);
+
+  renderMatches(played, teamA, teamB);
+  renderStandings(computeStandings(played, teamA, teamB));
 
   const st = $("statusLine");
   if(st){
-    st.textContent = `Обновлено • матчей: ${matches.length}`;
+    st.textContent = `Обновлено • сыграно матчей: ${played.length}`;
   }
 });

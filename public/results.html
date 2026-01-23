@@ -1,43 +1,66 @@
-<body class="admin">
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Итоги турнира</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+
+<body class="results">
   <div class="container">
-    <h1 style="margin:0 0 14px;">Итоги турнира</h1>
+    <h1>Итоги турнира</h1>
+    <div id="statusLine" class="hint">Подключаемся…</div>
 
-    <div class="card">
-      <div class="hint" id="statusLine">Подключение…</div>
+    <div class="card" style="margin-top:12px;">
+      <h2 style="margin:0 0 10px; font-size:16px;">Сыгранные матчи</h2>
 
-      <table class="matchesTable">
-        <thead>
-          <tr>
-            <th style="width:64px">Матч</th>
-            <th>Пара A</th>
-            <th>Пара B</th>
-            <th style="width:120px">Счёт</th>
-            <th style="width:120px">Победа</th>
-          </tr>
-        </thead>
-        <tbody id="matchesBody"></tbody>
-      </table>
+      <div class="matchesWrap">
+        <table class="matchesTable">
+          <thead>
+            <tr>
+              <th style="width:64px">Матч</th>
+              <th id="colResA" class="left">Команда A</th>
+              <th id="colResB" class="left">Команда B</th>
+              <th style="width:140px">Счёт</th>
+              <th style="width:140px">Победа</th>
+            </tr>
+          </thead>
+          <tbody id="matchesBody"></tbody>
+        </table>
+      </div>
 
-      <div style="height:14px"></div>
+      <div class="hint" style="margin-top:10px;">
+        Показываются только матчи, где введён корректный счёт и выбран победитель.
+      </div>
+    </div>
 
+    <div class="card" style="margin-top:12px;">
       <h2 style="margin:0 0 10px; font-size:16px;">Таблица</h2>
-      <table class="matchesTable">
-        <thead>
-          <tr>
-            <th style="width:64px">#</th>
-            <th style="text-align:left">Команда</th>
-            <th style="width:110px">Победы</th>
-            <th style="width:110px">Поражения</th>
-            <th style="width:140px">Очки</th>
-            <th style="width:120px">Разница</th>
-          </tr>
-        </thead>
-        <tbody id="standingsBody"></tbody>
-      </table>
+
+      <div class="matchesWrap">
+        <table class="matchesTable">
+          <thead>
+            <tr>
+              <th style="width:64px">#</th>
+              <th class="left">Команда</th>
+              <th style="width:110px">Победы</th>
+              <th style="width:130px">Поражения</th>
+              <th style="width:160px">Очки</th>
+              <th style="width:120px">Разница</th>
+            </tr>
+          </thead>
+          <tbody id="standingsBody"></tbody>
+        </table>
+      </div>
+
+      <div class="hint" style="margin-top:10px;">
+        Очки = забито:пропущено, Разница = забито − пропущено.
+      </div>
     </div>
   </div>
 
-  <!-- socket.io нужен, чтобы читать state с сервера -->
   <script src="/socket.io/socket.io.js"></script>
   <script src="/results.js"></script>
 </body>
+</html>
