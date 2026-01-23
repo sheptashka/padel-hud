@@ -27,15 +27,7 @@ function normalizeMatches(matchesFromState){
 }
 
 function isPlayed(m){
-  // "сыгранный" = есть валидный счет
   return !!parseScore(m.score);
-}
-
-function setHeaderNames(teamA, teamB){
-  const colA = $("colResA");
-  const colB = $("colResB");
-  if(colA) colA.textContent = teamA;
-  if(colB) colB.textContent = teamB;
 }
 
 function escapeHtml(s){
@@ -46,31 +38,39 @@ function escapeHtml(s){
     .replaceAll('"',"&quot;");
 }
 
-function renderMatches(matches, teamA, teamB){
+function setHeaderNames(teamA, teamB){
+  const colA = $("colResA");
+  const colB = $("colResB");
+  if(colA) colA.textContent = teamA;
+  if(colB) colB.textContent = teamB;
+}
+
+function renderMatches(playedMatches, teamA, teamB){
   const body = $("matchesBody");
   if(!body) return;
   body.innerHTML = "";
 
-  if(matches.length === 0){
+  if(playedMatches.length === 0){
     const tr = document.createElement("tr");
     tr.innerHTML = `<td colspan="5" class="mutedCell">Пока нет сыгранных матчей</td>`;
     body.appendChild(tr);
     return;
   }
 
-  matches.forEach((m) => {
+  playedMatches.forEach((m) => {
     const w = computeWinnerFromScore(m.score);
     const winnerName = (w === "A") ? teamA : (w === "B" ? teamB : "—");
+
     const winHtml = (winnerName === "—")
       ? `<span class="mutedCell">—</span>`
-      : `<span class="badgeWin">${escapeHtml(winnerName)}</span>`;
+      : `<span class="pillWin">${escapeHtml(winnerName)}</span>`;
 
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${m.id}</td>
-      <td class="left">${escapeHtml(m.a || "—")}</td>
-      <td class="left">${escapeHtml(m.b || "—")}</td>
-      <td>${escapeHtml(m.score)}</td>
+      <td class="num">${m.id}</td>
+      <td class="left clip">${escapeHtml(m.a || "—")}</td>
+      <td class="left clip">${escapeHtml(m.b || "—")}</td>
+      <td class="score">${escapeHtml(m.score)}</td>
       <td>${winHtml}</td>
     `;
     body.appendChild(tr);
@@ -89,11 +89,8 @@ function computeStandings(playedMatches, teamA, teamB){
     B.for += sc.b; B.against += sc.a;
 
     const w = computeWinnerFromScore(m.score);
-    if(w === "A"){
-      A.wins += 1; B.losses += 1;
-    } else if(w === "B"){
-      B.wins += 1; A.losses += 1;
-    }
+    if(w === "A"){ A.wins += 1; B.losses += 1; }
+    else if(w === "B"){ B.wins += 1; A.losses += 1; }
   }
 
   A.diff = A.for - A.against;
@@ -117,8 +114,8 @@ function renderStandings(rows){
   rows.forEach((r, idx) => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${idx+1}</td>
-      <td class="left"><b>${escapeHtml(r.team)}</b></td>
+      <td class="num">${idx+1}</td>
+      <td class="left clip"><b>${escapeHtml(r.team)}</b></td>
       <td>${r.wins}</td>
       <td>${r.losses}</td>
       <td>${r.for}:${r.against}</td>
@@ -134,6 +131,7 @@ function renderRoster(listId, arr){
   ul.innerHTML = "";
 
   const clean = (arr || []).map(x => String(x||"").trim()).filter(Boolean);
+
   if(clean.length === 0){
     const li = document.createElement("li");
     li.className = "muted";
@@ -141,6 +139,7 @@ function renderRoster(listId, arr){
     ul.appendChild(li);
     return;
   }
+
   clean.forEach(p=>{
     const li = document.createElement("li");
     li.textContent = p;
@@ -159,7 +158,7 @@ socket.on("state", (s)=>{
   const teamB = String(s?.teamB ?? "Команда B").trim() || "Команда B";
   setHeaderNames(teamA, teamB);
 
-  // rosters
+  // Rosters
   const rA = Array.isArray(s?.rosterA) ? s.rosterA : [];
   const rB = Array.isArray(s?.rosterB) ? s.rosterB : [];
   const tA = $("rosterTeamAName");
@@ -176,7 +175,5 @@ socket.on("state", (s)=>{
   renderStandings(computeStandings(played, teamA, teamB));
 
   const st = $("statusLine");
-  if(st){
-    st.textContent = `Обновлено • сыграно матчей: ${played.length}`;
-  }
+  if(st) st.textContent = `Обновлено • сыграно матчей: ${played.length}`;
 });

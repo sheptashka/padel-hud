@@ -402,69 +402,142 @@ button.danger{ border-color: rgba(255, 90, 90, .55); }
   color: rgba(255,255,255,.75);
   font-size:12px;
 }
-/* ===================== RESULTS (bigger fonts + layout) ===================== */
-body.results{
+
+
+/* ===================== RESULTS (compact, light) ===================== */
+body.resultsLight{
   margin:0;
-  background:#0b0d12;
-  color:#f3f3f3;
+  background:#ffffff;
+  color:#111;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 }
 
-body.results .container{
+.resultsPage{
   max-width: 1200px;
   margin: 18px auto;
-  padding: 0 14px 28px;
+  padding: 0 14px 18px;
 }
 
-body.results h1{
-  font-size: 30px;
-  margin: 0 0 12px;
+body.resultsLight h1{
+  margin:0 0 6px;
+  font-size: 26px;
 }
 
-body.results .hint{
-  font-size: 18px;
+.statusLine{
+  font-size: 14px;
+  color: rgba(0,0,0,.60);
+  margin-bottom: 10px;
 }
 
-body.results .matchesTable{
-  font-size: 20px;
-}
-
-body.results .matchesTable th,
-body.results .matchesTable td{
-  padding: 14px 12px;
-}
-
-/* layout: matches left + rosters right */
-.resultsGrid{
-  display: grid;
-  grid-template-columns: 1.6fr 1fr;
-  gap: 14px;
+.resultsLayout{
+  display:grid;
+  grid-template-columns: 1.7fr 1fr;
+  gap: 12px;
   align-items: start;
 }
 
-@media (max-width: 980px){
-  .resultsGrid{ grid-template-columns: 1fr; }
+/* чтобы влезало: ограничим высоту верхнего блока и дадим скролл только таблице матчей */
+.panel{
+  background: #fff;
+  border: 1px solid rgba(0,0,0,.10);
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 8px 18px rgba(0,0,0,.06);
 }
 
-.rosterBox{
-  display: grid;
-  gap: 14px;
+.panelHead{
+  display:flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.panelHead h2{
+  margin:0;
+  font-size: 16px;
+}
+
+.smallHint{
+  font-size: 12px;
+  color: rgba(0,0,0,.55);
+}
+
+.tableWrap{
+  overflow:auto;
+  max-height: 52vh; /* ключевое: влезаем на один экран */
+  border-radius: 10px;
+}
+
+.rTable{
+  width:100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.rTable th,
+.rTable td{
+  padding: 10px 10px;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+  text-align: center;
+  vertical-align: middle;
+}
+
+.rTable th{
+  font-weight: 700;
+  color: rgba(0,0,0,.70);
+  background: rgba(0,0,0,.02);
+  position: sticky;
+  top: 0;
+}
+
+.rTable .left{ text-align:left; }
+
+.rTable .num{ width:56px; }
+.rTable td.score{ font-weight: 700; }
+
+.clip{
+  max-width: 360px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pillWin{
+  display:inline-flex;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,.12);
+  background: rgba(0,0,0,.03);
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.mutedCell{
+  color: rgba(0,0,0,.45);
+}
+
+.rosters{
+  display:grid;
+  gap: 10px;
 }
 
 .rosterTitle{
-  font-size: 20px;
   font-weight: 800;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .rosterList{
   margin: 0;
-  padding-left: 18px;
-  font-size: 20px;
-  line-height: 1.6;
-  opacity: .95;
+  padding-left: 16px;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
-.rosterList li.muted{
-  opacity: .55;
+.rosterList li.muted{ color: rgba(0,0,0,.45); }
+
+@media (max-width: 980px){
+  .resultsLayout{ grid-template-columns: 1fr; }
+  .tableWrap{ max-height: 46vh; }
+  .clip{ max-width: 70vw; }
 }
