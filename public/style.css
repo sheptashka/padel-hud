@@ -24,6 +24,8 @@ body.overlay{
   padding: var(--bgPad);
 
   isolation: isolate;
+  transform: scale(1.35);
+  transform-origin: top left;
 }
 
 .hud::before{
