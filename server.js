@@ -53,14 +53,6 @@ io.on("connection", (socket) => {
       state = { ...state, ...patch };
       broadcast();
     }
-  });
-
-  socket.on("reset", () => {
-    state = { ...state, a1: 0, a2: 0, a3: 0, b1: 0, b2: 0, b3: 0 };
-    broadcast();
-  });
-});
-
 socket.on("setMatches", (matches) => {
   if (!Array.isArray(matches)) return;
 
@@ -75,6 +67,15 @@ socket.on("setMatches", (matches) => {
 
   io.emit("state", state);
 });
+
+  });
+
+  socket.on("reset", () => {
+    state = { ...state, a1: 0, a2: 0, a3: 0, b1: 0, b2: 0, b3: 0 };
+    broadcast();
+  });
+});
+
 
 
 const PORT = process.env.PORT || 3333;
