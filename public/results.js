@@ -22,13 +22,6 @@ function parseScore(score){
   return { a: Number(m[1]), b: Number(m[2]) };
 }
 
-function teamFromPair(pair){
-  const s = String(pair || "").trim().toUpperCase();
-  if(s.startsWith("A")) return "A";
-  if(s.startsWith("B")) return "B";
-  return "?";
-}
-
 function normalizeMatches(matchesFromState){
   // если сервер ещё не хранит matches — показываем дефолтную сетку
   if(!Array.isArray(matchesFromState) || matchesFromState.length === 0){
@@ -50,7 +43,7 @@ function renderMatches(matches){
   body.innerHTML = "";
 
   matches.forEach((m, idx) => {
-    const winner = m.winner === "A" ? "A" : (m.winner === "B" ? "B" : "");
+    const winner = (m.winner === "A") ? "A" : ((m.winner === "B") ? "B" : "");
     const winHtml = winner
       ? `<span class="badgeWin badge${winner}">${winner}</span>`
       : `<span class="mutedCell">—</span>`;
@@ -78,8 +71,11 @@ function computeStandings(matches){
   }
 
   for(const m of matches){
-    const tA = teamFromPair(m.a);
-    const tB = teamFromPair(m.b);
+    // ✅ ВАЖНО: теперь m.a и m.b — это НАЗВАНИЯ КОМАНД (TEAM A / TEAM B),
+    // а не "A1+A2". Поэтому просто берём строки как есть.
+    const tA = String(m.a || "").trim();
+    const tB = String(m.b || "").trim();
+    if(!tA || !tB) continue; // чтобы пустые строки не создавали “третью команду”
 
     const A = ensure(tA);
     const B = ensure(tB);
@@ -99,6 +95,7 @@ function computeStandings(matches){
 
   const arr = [...teams.values()].map(x => ({...x, diff: x.for - x.against}));
 
+  // сортировка: победы → разница → очки "за"
   arr.sort((x,y)=>{
     if(y.wins !== x.wins) return y.wins - x.wins;
     if(y.diff !== x.diff) return y.diff - x.diff;
@@ -124,7 +121,7 @@ function renderStandings(rows){
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${idx+1}</td>
-      <td class="left"><b>Команда ${r.team}</b></td>
+      <td class="left"><b>${r.team}</b></td>
       <td>${r.wins}</td>
       <td>${r.losses}</td>
       <td>${r.for}:${r.against}</td>
