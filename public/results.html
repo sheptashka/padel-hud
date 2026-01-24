@@ -9,10 +9,16 @@
 <body class="results">
   <div class="rContainer">
     <h1 class="rTitle">Турнирная таблица</h1>
-    <div id="statusLine" class="rSub">Загружаем…</div>
+
+    <!-- статус оставляем, но прячем (чтобы ничего не прыгало) -->
+    <div id="statusLine" class="rSub" style="display:none;">Загружаем…</div>
 
     <div class="rCard">
-      <div class="rCardTitle">Сыгранные матчи</div>
+      <div class="rCardTitle rCardHead">
+        <span>Сыгранные матчи</span>
+        <span id="playedCount" class="rSub" style="margin:0;">сыграно матчей: 0</span>
+      </div>
+
       <div class="rTableWrap">
         <table class="rTable">
           <thead>
@@ -53,11 +59,11 @@
       <div class="rRosters">
         <div class="rRoster">
           <div class="rRosterName" id="rosterTeamA">Команда A</div>
-          <ul class="rRosterList" id="rosterA"></ul>
+          <div class="rRosterLine" id="rosterA">—</div>
         </div>
         <div class="rRoster">
           <div class="rRosterName" id="rosterTeamB">Команда B</div>
-          <ul class="rRosterList" id="rosterB"></ul>
+          <div class="rRosterLine" id="rosterB">—</div>
         </div>
       </div>
     </div>

@@ -442,6 +442,14 @@ body.results{
   margin: 0 0 10px;
 }
 
+/* ✅ заголовок карточки + счетчик справа */
+.rCardHead{
+  display:flex;
+  align-items:baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .rTableWrap{
   overflow: auto;
   border-radius: 12px;
@@ -490,10 +498,11 @@ body.results{
   margin-bottom: 8px;
 }
 
-.rRosterList{
-  margin: 0;
-  padding-left: 18px;
-  color: #222;
+/* ✅ составы в строку через | */
+.rRosterLine{
+  color:#222;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 @media (max-width: 860px){

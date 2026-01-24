@@ -54,6 +54,10 @@ function renderMatches(matches, teamAName, teamBName) {
     .map((m, idx) => ({ ...m, idx }))
     .filter((m) => parseScore(m.score));
 
+  // обновляем счётчик "сыграно матчей" рядом с заголовком
+  const playedCountEl = $("playedCount");
+  if (playedCountEl) playedCountEl.textContent = `сыграно матчей: ${played.length}`;
+
   if (played.length === 0) {
     const tr = document.createElement("tr");
     tr.innerHTML = `<td colspan="5" class="rMuted">Пока нет сыгранных матчей</td>`;
@@ -102,10 +106,12 @@ function computeStandings(matches, teamAName, teamBName) {
 
   base.forEach((x) => (x.diff = x.for - x.against));
 
+  // ✅ сортировка: у кого больше "очков суммарно" (забито = for) — тот выше
   base.sort((x, y) => {
-    if (y.wins !== x.wins) return y.wins - x.wins;
-    if (y.diff !== x.diff) return y.diff - x.diff;
-    return y.for - x.for;
+    if (y.for !== x.for) return y.for - x.for;       // суммарно забито
+    if (y.diff !== x.diff) return y.diff - x.diff;   // разница
+    if (y.wins !== x.wins) return y.wins - x.wins;   // победы
+    return String(x.team).localeCompare(String(y.team));
   });
 
   return base;
@@ -131,48 +137,36 @@ function renderStandings(rows) {
 }
 
 function renderRosters(teamAName, teamBName, teamAPlayers, teamBPlayers) {
-  $("rosterTeamA").textContent = teamAName;
-  $("rosterTeamB").textContent = teamBName;
+  const elNameA = $("rosterTeamA");
+  const elNameB = $("rosterTeamB");
+  if (elNameA) elNameA.textContent = teamAName;
+  if (elNameB) elNameB.textContent = teamBName;
 
-  const ulA = $("rosterA");
-  const ulB = $("rosterB");
-  ulA.innerHTML = "";
-  ulB.innerHTML = "";
+  const lineA = $("rosterA");
+  const lineB = $("rosterB");
 
   const a = Array.isArray(teamAPlayers) ? teamAPlayers : [];
   const b = Array.isArray(teamBPlayers) ? teamBPlayers : [];
 
-  const fill = (ul, arr) => {
-    const clean = arr.map(x => String(x || "").trim()).filter(Boolean);
-    if (clean.length === 0) {
-      const li = document.createElement("li");
-      li.className = "rMuted";
-      li.textContent = "—";
-      ul.appendChild(li);
-      return;
-    }
-    clean.forEach((name) => {
-      const li = document.createElement("li");
-      li.textContent = name;
-      ul.appendChild(li);
-    });
-  };
+  const joinLine = (arr) =>
+    arr.map(x => String(x || "").trim()).filter(Boolean).join(" | ");
 
-  fill(ulA, a);
-  fill(ulB, b);
+  if (lineA) lineA.textContent = joinLine(a) || "—";
+  if (lineB) lineB.textContent = joinLine(b) || "—";
 }
 
 function applyState(s) {
   const teamAName = safeName(s?.teamA, "Команда A");
   const teamBName = safeName(s?.teamB, "Команда B");
 
-  // заголовки
+  // заголовки таблицы матчей
   const thA = $("thTeamA");
   const thB = $("thTeamB");
   if (thA) thA.textContent = teamAName;
   if (thB) thB.textContent = teamBName;
 
   const matches = normalizeMatches(s?.matches);
+
   renderMatches(matches, teamAName, teamBName);
   renderStandings(computeStandings(matches, teamAName, teamBName));
 
@@ -183,12 +177,7 @@ function applyState(s) {
     s?.teamBPlayers
   );
 
-  // статус
-  const playedCount = matches.filter(m => parseScore(m.score)).length;
-  const st = $("statusLine");
-  if (st) st.textContent = `Обновлено • сыграно матчей: ${playedCount}`;
-
-  // кеш на случай рестартов/простая
+  // кеш на случай простоя/рестартов
   saveCache({
     teamA: teamAName,
     teamB: teamBName,
@@ -198,15 +187,23 @@ function applyState(s) {
   });
 }
 
+// ---------- LIVE UPDATE + анти-"сброс после простоя" ----------
 socket.on("connect", () => {
   socket.emit("getState");
 });
+
+// если соединение отвалилось и сервер/вкладка долго молчали — мы всё равно периодически просим state
+setInterval(() => {
+  try { socket.emit("getState"); } catch(_) {}
+}, 8000);
 
 socket.on("state", (s) => {
   // если сервер прислал пусто (после простоя/рестарта) — восстановим из localStorage
   const hasSomething =
     (s?.teamA || s?.teamB) ||
-    (Array.isArray(s?.matches) && s.matches.some(m => String(m?.score || "").trim()));
+    (Array.isArray(s?.matches) && s.matches.some(m => String(m?.score || "").trim())) ||
+    (Array.isArray(s?.teamAPlayers) && s.teamAPlayers.length) ||
+    (Array.isArray(s?.teamBPlayers) && s.teamBPlayers.length);
 
   if (!hasSomething) {
     const cached = loadCache();
