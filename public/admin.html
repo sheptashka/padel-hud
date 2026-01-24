@@ -56,77 +56,76 @@
         </div>
       </div>
 
-      <!-- ===== Rosters ===== -->
+      <!-- Составы -->
       <div class="card" style="margin-top:14px;">
         <h2 style="margin:0 0 10px; font-size:16px;">Составы команд</h2>
 
         <div class="grid2">
           <div>
-            <label>Состав Команды A — игрок 1</label>
-            <input id="playerA1" placeholder="Игрок A1" />
+            <label>Команда A — игрок 1</label>
+            <input id="aP1" placeholder="Напр. Дред" />
           </div>
           <div>
-            <label>Состав Команды B — игрок 1</label>
-            <input id="playerB1" placeholder="Игрок B1" />
-          </div>
-
-          <div>
-            <label>Состав Команды A — игрок 2</label>
-            <input id="playerA2" placeholder="Игрок A2" />
-          </div>
-          <div>
-            <label>Состав Команды B — игрок 2</label>
-            <input id="playerB2" placeholder="Игрок B2" />
+            <label>Команда B — игрок 1</label>
+            <input id="bP1" placeholder="Напр. Флешка" />
           </div>
 
           <div>
-            <label>Состав Команды A — игрок 3</label>
-            <input id="playerA3" placeholder="Игрок A3" />
+            <label>Команда A — игрок 2</label>
+            <input id="aP2" placeholder="Напр. Кармик" />
           </div>
           <div>
-            <label>Состав Команды B — игрок 3</label>
-            <input id="playerB3" placeholder="Игрок B3" />
+            <label>Команда B — игрок 2</label>
+            <input id="bP2" placeholder="Напр. Шепташка" />
+          </div>
+
+          <div>
+            <label>Команда A — игрок 3</label>
+            <input id="aP3" placeholder="Напр. Саня" />
+          </div>
+          <div>
+            <label>Команда B — игрок 3</label>
+            <input id="bP3" placeholder="Напр. Жека" />
           </div>
         </div>
-
-        <div class="hint">Эти составы будут показаны на странице итогов справа.</div>
       </div>
 
+      <!-- Очки HUD -->
       <div class="teamsPanel compact">
         <div class="teamRow compact">
           <div class="teamRowTitle" id="teamRowA">Команда A</div>
-          <button class="btn compact" id="aMinus" type="button" aria-label="A minus">−</button>
+          <button class="btn compact" id="aMinus" aria-label="A minus">−</button>
 
           <div class="scorePill compact">
             <div class="scorePillLabel">Очки A</div>
             <input class="scorePillInput compact" id="a3" type="number" min="0" step="1" />
           </div>
 
-          <button class="btn compact" id="aPlus" type="button" aria-label="A plus">+</button>
+          <button class="btn compact" id="aPlus" aria-label="A plus">+</button>
         </div>
 
         <div class="teamRow compact">
           <div class="teamRowTitle" id="teamRowB">Команда B</div>
-          <button class="btn compact" id="bMinus" type="button" aria-label="B minus">−</button>
+          <button class="btn compact" id="bMinus" aria-label="B minus">−</button>
 
           <div class="scorePill compact">
             <div class="scorePillLabel">Очки B</div>
             <input class="scorePillInput compact" id="b3" type="number" min="0" step="1" />
           </div>
 
-          <button class="btn compact" id="bPlus" type="button" aria-label="B plus">+</button>
+          <button class="btn compact" id="bPlus" aria-label="B plus">+</button>
         </div>
       </div>
 
       <div class="rowBtns">
-        <button class="primary" id="apply" type="button">Применить</button>
-        <button class="danger" id="reset" type="button">Сбросить счет</button>
+        <button class="primary" id="apply">Применить</button>
+        <button class="danger" id="reset">Сбросить счет</button>
       </div>
 
       <!-- ===== Matches ===== -->
       <div class="card" style="margin-top:14px;">
         <h2 style="margin:0 0 10px; font-size:16px;">Матчи турнира (3×3)</h2>
-        <div class="hint">Заполняй пары/игроков (опционально), вводи счёт вида <b>21:17</b>. Победитель определяется автоматически по счёту.</div>
+        <div class="hint">Вводи счёт вида <b>21:17</b>. Победа считается автоматически по счёту.</div>
 
         <div class="matchesWrap">
           <table class="matchesTable" style="min-width:720px;">
@@ -135,10 +134,9 @@
                 <th style="width:64px">Матч</th>
                 <th id="colTeamA">Команда A</th>
                 <th id="colTeamB">Команда B</th>
-                <th style="width:140px">Счёт</th>
+                <th style="width:160px">Счёт</th>
               </tr>
             </thead>
-
             <tbody id="adminMatchesBody"></tbody>
           </table>
         </div>

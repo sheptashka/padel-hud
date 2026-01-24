@@ -1,121 +1,220 @@
 const socket = io();
+const $ = (id) => document.getElementById(id);
 
-function $(id) {
-  return document.getElementById(id);
-}
+const RESULTS_KEY = "padel_results_cache_v1";
 
 function parseScore(score) {
   if (!score) return null;
-  const m = String(score).trim().match(/^(\d+)\s*[:\-]\s*(\d+)$/);
+  const s = String(score).trim();
+  const m = s.match(/^(\d+)\s*[:\-]\s*(\d+)$/);
   if (!m) return null;
   return { a: Number(m[1]), b: Number(m[2]) };
 }
 
-function renderMatches(matches, teamA, teamB) {
+function safeName(s, fallback) {
+  const v = String(s ?? "").trim();
+  return v ? v : fallback;
+}
+
+function saveCache(payload) {
+  try { localStorage.setItem(RESULTS_KEY, JSON.stringify(payload)); } catch(_) {}
+}
+function loadCache() {
+  try {
+    const raw = localStorage.getItem(RESULTS_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch(_) { return null; }
+}
+
+function normalizeMatches(matchesFromState) {
+  if (!Array.isArray(matchesFromState)) return [];
+  return matchesFromState.map((m, i) => ({
+    id: m.id ?? (i + 1),
+    a: (m.a ?? "").trim(),
+    b: (m.b ?? "").trim(),
+    score: (m.score ?? "").trim(),
+  }));
+}
+
+function winnerByScore(sc, teamAName, teamBName) {
+  if (!sc) return "";
+  if (sc.a > sc.b) return teamAName;
+  if (sc.b > sc.a) return teamBName;
+  return ""; // ничья
+}
+
+function renderMatches(matches, teamAName, teamBName) {
   const body = $("matchesBody");
   if (!body) return;
-
   body.innerHTML = "";
 
-  const played = matches.filter(m => parseScore(m.score));
+  // показываем ТОЛЬКО сыгранные: есть корректный счёт
+  const played = matches
+    .map((m, idx) => ({ ...m, idx }))
+    .filter((m) => parseScore(m.score));
 
   if (played.length === 0) {
-    body.innerHTML = `
-      <tr>
-        <td colspan="5" style="color:#888">Нет сыгранных матчей</td>
-      </tr>
-    `;
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td colspan="5" class="rMuted">Пока нет сыгранных матчей</td>`;
+    body.appendChild(tr);
     return;
   }
 
-  played.forEach((m, i) => {
+  played.forEach((m) => {
     const sc = parseScore(m.score);
-    const winner =
-      sc.a > sc.b ? teamA :
-      sc.b > sc.a ? teamB :
-      "—";
+    const win = winnerByScore(sc, teamAName, teamBName);
 
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${i + 1}</td>
-      <td>${m.a || "—"}</td>
-      <td>${m.b || "—"}</td>
+      <td>${m.idx + 1}</td>
+      <td>${m.a || `<span class="rMuted">—</span>`}</td>
+      <td>${m.b || `<span class="rMuted">—</span>`}</td>
       <td>${m.score}</td>
-      <td>${winner}</td>
+      <td>${win ? win : `<span class="rMuted">—</span>`}</td>
     `;
     body.appendChild(tr);
   });
 }
 
-function renderTable(matches, teamA, teamB) {
+function computeStandings(matches, teamAName, teamBName) {
+  const base = [
+    { team: teamAName, wins: 0, losses: 0, for: 0, against: 0, diff: 0 },
+    { team: teamBName, wins: 0, losses: 0, for: 0, against: 0, diff: 0 },
+  ];
+
+  const map = new Map();
+  base.forEach((x) => map.set(x.team, x));
+
+  for (const m of matches) {
+    const sc = parseScore(m.score);
+    if (!sc) continue;
+
+    const A = map.get(teamAName);
+    const B = map.get(teamBName);
+
+    A.for += sc.a; A.against += sc.b;
+    B.for += sc.b; B.against += sc.a;
+
+    if (sc.a > sc.b) { A.wins += 1; B.losses += 1; }
+    else if (sc.b > sc.a) { B.wins += 1; A.losses += 1; }
+  }
+
+  base.forEach((x) => (x.diff = x.for - x.against));
+
+  base.sort((x, y) => {
+    if (y.wins !== x.wins) return y.wins - x.wins;
+    if (y.diff !== x.diff) return y.diff - x.diff;
+    return y.for - x.for;
+  });
+
+  return base;
+}
+
+function renderStandings(rows) {
   const body = $("standingsBody");
   if (!body) return;
-
-  const stats = {
-    A: { name: teamA, wins: 0, losses: 0, for: 0, against: 0 },
-    B: { name: teamB, wins: 0, losses: 0, for: 0, against: 0 }
-  };
-
-  matches.forEach(m => {
-    const sc = parseScore(m.score);
-    if (!sc) return;
-
-    stats.A.for += sc.a;
-    stats.A.against += sc.b;
-    stats.B.for += sc.b;
-    stats.B.against += sc.a;
-
-    if (sc.a > sc.b) {
-      stats.A.wins++;
-      stats.B.losses++;
-    } else if (sc.b > sc.a) {
-      stats.B.wins++;
-      stats.A.losses++;
-    }
-  });
-
   body.innerHTML = "";
 
-  ["A", "B"].forEach((k, i) => {
-    const t = stats[k];
-    const diff = t.for - t.against;
-
+  rows.forEach((r, idx) => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${i + 1}</td>
-      <td>${t.name}</td>
-      <td>${t.wins}</td>
-      <td>${t.losses}</td>
-      <td>${t.for}:${t.against}</td>
-      <td>${diff >= 0 ? "+" : ""}${diff}</td>
+      <td>${idx + 1}</td>
+      <td>${r.team}</td>
+      <td>${r.wins}</td>
+      <td>${r.losses}</td>
+      <td>${r.for}:${r.against}</td>
+      <td>${r.diff >= 0 ? "+" : ""}${r.diff}</td>
     `;
     body.appendChild(tr);
   });
 }
 
-function renderRosters(rosters, teamA, teamB) {
-  $("rosterA").innerHTML = (rosters?.A || []).map(p => `<li>${p}</li>`).join("");
-  $("rosterB").innerHTML = (rosters?.B || []).map(p => `<li>${p}</li>`).join("");
+function renderRosters(teamAName, teamBName, teamAPlayers, teamBPlayers) {
+  $("rosterTeamA").textContent = teamAName;
+  $("rosterTeamB").textContent = teamBName;
 
-  $("rosterTitleA").textContent = teamA;
-  $("rosterTitleB").textContent = teamB;
+  const ulA = $("rosterA");
+  const ulB = $("rosterB");
+  ulA.innerHTML = "";
+  ulB.innerHTML = "";
+
+  const a = Array.isArray(teamAPlayers) ? teamAPlayers : [];
+  const b = Array.isArray(teamBPlayers) ? teamBPlayers : [];
+
+  const fill = (ul, arr) => {
+    const clean = arr.map(x => String(x || "").trim()).filter(Boolean);
+    if (clean.length === 0) {
+      const li = document.createElement("li");
+      li.className = "rMuted";
+      li.textContent = "—";
+      ul.appendChild(li);
+      return;
+    }
+    clean.forEach((name) => {
+      const li = document.createElement("li");
+      li.textContent = name;
+      ul.appendChild(li);
+    });
+  };
+
+  fill(ulA, a);
+  fill(ulB, b);
+}
+
+function applyState(s) {
+  const teamAName = safeName(s?.teamA, "Команда A");
+  const teamBName = safeName(s?.teamB, "Команда B");
+
+  // заголовки
+  const thA = $("thTeamA");
+  const thB = $("thTeamB");
+  if (thA) thA.textContent = teamAName;
+  if (thB) thB.textContent = teamBName;
+
+  const matches = normalizeMatches(s?.matches);
+  renderMatches(matches, teamAName, teamBName);
+  renderStandings(computeStandings(matches, teamAName, teamBName));
+
+  renderRosters(
+    teamAName,
+    teamBName,
+    s?.teamAPlayers,
+    s?.teamBPlayers
+  );
+
+  // статус
+  const playedCount = matches.filter(m => parseScore(m.score)).length;
+  const st = $("statusLine");
+  if (st) st.textContent = `Обновлено • сыграно матчей: ${playedCount}`;
+
+  // кеш на случай рестартов/простая
+  saveCache({
+    teamA: teamAName,
+    teamB: teamBName,
+    teamAPlayers: s?.teamAPlayers ?? [],
+    teamBPlayers: s?.teamBPlayers ?? [],
+    matches
+  });
 }
 
 socket.on("connect", () => {
-  $("statusLine").textContent = "Загружаем…";
   socket.emit("getState");
 });
 
 socket.on("state", (s) => {
-  if (!s) return;
+  // если сервер прислал пусто (после простоя/рестарта) — восстановим из localStorage
+  const hasSomething =
+    (s?.teamA || s?.teamB) ||
+    (Array.isArray(s?.matches) && s.matches.some(m => String(m?.score || "").trim()));
 
-  const teamA = s.teamA || "Команда A";
-  const teamB = s.teamB || "Команда B";
-  const matches = Array.isArray(s.matches) ? s.matches : [];
+  if (!hasSomething) {
+    const cached = loadCache();
+    if (cached) {
+      applyState(cached);
+      return;
+    }
+  }
 
-  $("statusLine").textContent = `Обновлено • сыграно матчей: ${matches.filter(m => parseScore(m.score)).length}`;
-
-  renderMatches(matches, teamA, teamB);
-  renderTable(matches, teamA, teamB);
-  renderRosters(s.rosters || {}, teamA, teamB);
+  applyState(s || {});
 });
