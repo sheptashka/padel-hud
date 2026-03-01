@@ -3,40 +3,47 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Матч — статистика</title>
+  <title>Match Stats</title>
   <link rel="stylesheet" href="/style.css" />
 </head>
+
 <body class="match">
   <div class="mWrap">
-
+    <!-- HEADER -->
     <header class="mHeader">
-      <div class="mTeam mTeamLeft" id="mTeamA">Команда 1</div>
+      <div class="mTeam mTeamLeft" id="teamAName">Команда A</div>
 
-      <div class="mCenter">
-        <div class="mTotal" id="mTotal">0 : 0</div>
-        <div class="mStatus" id="mStatus">Загружаем…</div>
+      <div class="mScore">
+        <span class="mScoreNum" id="totalA">0</span>
+        <span class="mScoreSep">:</span>
+        <span class="mScoreNum" id="totalB">0</span>
       </div>
 
-      <div class="mTeam mTeamRight" id="mTeamB">Команда 2</div>
+      <div class="mTeam mTeamRight" id="teamBName">Команда B</div>
     </header>
 
+    <!-- 3 columns -->
     <main class="mGrid">
-      <section class="mCard">
-        <div class="mCardTitle" id="mRosterATitle">Состав</div>
-        <ul class="mRoster" id="mRosterA"></ul>
+      <!-- LEFT -->
+      <section class="mCol">
+        <div class="mColTitle">Состав команды:</div>
+        <ul class="mRoster" id="rosterA"></ul>
       </section>
 
-      <section class="mCard mCardCenter">
-        <div class="mCardTitle">Результаты матчей</div>
-        <div class="mScores" id="mScores"></div>
+      <!-- CENTER -->
+      <section class="mCol mColCenter">
+        <div class="mColTitle mCenterTitle">Счёт матчей</div>
+        <div class="mMatches" id="matchScores"></div>
       </section>
 
-      <section class="mCard">
-        <div class="mCardTitle" id="mRosterBTitle">Состав</div>
-        <ul class="mRoster" id="mRosterB"></ul>
+      <!-- RIGHT -->
+      <section class="mCol">
+        <div class="mColTitle">Состав команды:</div>
+        <ul class="mRoster" id="rosterB"></ul>
       </section>
     </main>
 
+    <div class="mStatus" id="statusLine"></div>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
