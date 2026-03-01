@@ -9,11 +9,10 @@
 
 <body class="match">
   <div class="mWrap">
-    <!-- HEADER -->
     <header class="mHeader">
       <div class="mTeam mTeamLeft" id="teamAName">Команда A</div>
 
-      <div class="mScore">
+      <div class="mScore" aria-label="Общий счёт за турнир">
         <span class="mScoreNum" id="totalA">0</span>
         <span class="mScoreSep">:</span>
         <span class="mScoreNum" id="totalB">0</span>
@@ -22,21 +21,17 @@
       <div class="mTeam mTeamRight" id="teamBName">Команда B</div>
     </header>
 
-    <!-- 3 columns -->
     <main class="mGrid">
-      <!-- LEFT -->
       <section class="mCol">
         <div class="mColTitle">Состав команды:</div>
         <ul class="mRoster" id="rosterA"></ul>
       </section>
 
-      <!-- CENTER -->
       <section class="mCol mColCenter">
         <div class="mColTitle mCenterTitle">Счёт матчей</div>
         <div class="mMatches" id="matchScores"></div>
       </section>
 
-      <!-- RIGHT -->
       <section class="mCol">
         <div class="mColTitle">Состав команды:</div>
         <ul class="mRoster" id="rosterB"></ul>

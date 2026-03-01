@@ -1,4 +1,3 @@
-Ivan Kalmykov, [01.03.2026 23:06]
 /* ===================== HUD ===================== */
 body.overlay{
   margin:0;
@@ -221,9 +220,7 @@ input, select{
   color: #f3f3f3;
   cursor: pointer;
   font-size: 22px;
-
-Ivan Kalmykov, [01.03.2026 23:06]
-font-weight: 900;
+  font-weight: 900;
 }
 
 .scorePill{
@@ -453,9 +450,7 @@ body.results{
 .rTable{
   width: 100%;
   border-collapse: collapse;
-
-Ivan Kalmykov, [01.03.2026 23:06]
-font-size: 14px;
+  font-size: 14px;
 }
 
 .rTable thead th{
@@ -517,13 +512,11 @@ body.match{
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 }
 
-/* wrapper with safe padding */
 .mWrap{
   padding: 18px 22px;
   max-width: 1200px;
 }
 
-/* header: team | total | team */
 .mHeader{
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -558,7 +551,7 @@ body.match{
 }
 
 .mScoreNum{
-  font-size: 72px; /* +50% относительно обычного */
+  font-size: 108px; /* ✅ +50% (было 72px) */
   font-weight: 950;
   line-height: 1;
   letter-spacing: .5px;
@@ -570,13 +563,17 @@ body.match{
   opacity: .85;
 }
 
-/* Leader highlight (sport tab) */
+/* Leader base */
 .mLeader{
-  text-shadow: 0 0 18px rgba(255,255,255,.35);
+  text-shadow: 0 0 18px rgba(255,255,255,.20);
   filter: drop-shadow(0 10px 18px rgba(0,0,0,.35));
 }
 
-/* 3 columns layout */
+/* ✅ зелёная аккуратная тень именно для лидирующей цифры */
+.mLeaderScore{
+  text-shadow: 0 0 14px rgba(0, 255, 120, .35);
+}
+
 .mGrid{
   display: grid;
   grid-template-columns: 1fr 1.2fr 1fr;
@@ -584,7 +581,6 @@ body.match{
   align-items: start;
 }
 
-/* translucent panels */
 .mCol{
   border-radius: 18px;
   border: 1px solid rgba(255,255,255,.14);
@@ -611,7 +607,6 @@ body.match{
   text-align: center;
 }
 
-/* roster list */
 .mRoster{
   margin: 0;
   padding: 0;
@@ -648,7 +643,6 @@ body.match{
   opacity: .55;
 }
 
-/* match scores list */
 .mMatches{
   display: grid;
   gap: 10px;
@@ -699,11 +693,11 @@ body.match{
   .mHeader{ grid-template-columns: 1fr; }
   .mTeamLeft, .mTeamRight{ text-align: center; }
   .mScore{ justify-content: center; }
-  .mScoreNum{ font-size: 56px; }
-  .
 
-Ivan Kalmykov, [01.03.2026 23:06]
-mScoreSep{ font-size: 40px; }
+  /* ✅ +50% для мобильного тоже (было 56px) */
+  .mScoreNum{ font-size: 84px; }
+  .mScoreSep{ font-size: 40px; }
+
   .mCol{ min-height: auto; }
   .mColCenter{ min-height: auto; }
 }

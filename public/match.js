@@ -17,14 +17,14 @@ function safeName(v, fallback) {
 }
 
 function saveCache(payload) {
-  try { localStorage.setItem(MATCH_CACHE_KEY, JSON.stringify(payload)); } catch(_) {}
+  try { localStorage.setItem(MATCH_CACHE_KEY, JSON.stringify(payload)); } catch (_) {}
 }
 function loadCache() {
   try {
     const raw = localStorage.getItem(MATCH_CACHE_KEY);
     if (!raw) return null;
     return JSON.parse(raw);
-  } catch(_) { return null; }
+  } catch (_) { return null; }
 }
 
 function normalizeMatches(matchesFromState) {
@@ -35,6 +35,19 @@ function normalizeMatches(matchesFromState) {
   }));
 }
 
+function computeTotals(matches) {
+  let aTotal = 0;
+  let bTotal = 0;
+
+  for (const m of matches) {
+    const sc = parseScore(m.score);
+    if (!sc) continue;
+    aTotal += sc.a;
+    bTotal += sc.b;
+  }
+  return { aTotal, bTotal };
+}
+
 function setLeaderUI(aTotal, bTotal) {
   const teamAEl = $("teamAName");
   const teamBEl = $("teamBName");
@@ -42,13 +55,14 @@ function setLeaderUI(aTotal, bTotal) {
   const bEl = $("totalB");
 
   [teamAEl, teamBEl, aEl, bEl].forEach((x) => x && x.classList.remove("mLeader"));
+  [aEl, bEl].forEach((x) => x && x.classList.remove("mLeaderScore"));
 
   if (aTotal > bTotal) {
     teamAEl && teamAEl.classList.add("mLeader");
-    aEl && aEl.classList.add("mLeader");
+    aEl && aEl.classList.add("mLeader", "mLeaderScore");
   } else if (bTotal > aTotal) {
     teamBEl && teamBEl.classList.add("mLeader");
-    bEl && bEl.classList.add("mLeader");
+    bEl && bEl.classList.add("mLeader", "mLeaderScore");
   }
   // ничья — без подсветки
 }
@@ -56,6 +70,7 @@ function setLeaderUI(aTotal, bTotal) {
 function renderHeader(teamAName, teamBName, aTotal, bTotal) {
   $("teamAName").textContent = teamAName;
   $("teamBName").textContent = teamBName;
+
   $("totalA").textContent = String(aTotal);
   $("totalB").textContent = String(bTotal);
 
@@ -73,14 +88,15 @@ function renderRoster(listId, players) {
   if (clean.length === 0) {
     const li = document.createElement("li");
     li.className = "mMuted";
-    li.innerHTML = <span class="mAvatar"></span><span class="mName">—</span>;
+    li.innerHTML = `<span class="mAvatar"></span><span class="mName">—</span>`;
     ul.appendChild(li);
     return;
   }
 
   clean.forEach((name) => {
     const li = document.createElement("li");
-    li.innerHTML = <span class="mAvatar"></span><span class="mName">${name}</span>;
+    // ✅ без чекбоксов, но оставляем место под мини-фото (mAvatar)
+    li.innerHTML = `<span class="mAvatar"></span><span class="mName">${escapeHtml(name)}</span>`;
     ul.appendChild(li);
   });
 }
@@ -90,7 +106,7 @@ function renderMatchScores(matches) {
   if (!box) return;
   box.innerHTML = "";
 
-  // показываем только корректные счёта
+  // ✅ показываем только корректные счёта
   const played = matches
     .map((m, idx) => ({ ...m, idx }))
     .filter((m) => parseScore(m.score));
@@ -108,23 +124,19 @@ function renderMatchScores(matches) {
     row.className = "mMatchRow";
     row.innerHTML = `
       <div class="mMatchIdx">${m.idx + 1}</div>
-      <div class="mMatchScore">${m.score.replace("-", ":")}</div>
+      <div class="mMatchScore">${escapeHtml(m.score.replace("-", ":"))}</div>
     `;
     box.appendChild(row);
   });
 }
 
-function computeTotals(matches) {
-  let aTotal = 0;
-  let bTotal = 0;
-
-  for (const m of matches) {
-    const sc = parseScore(m.score);
-    if (!sc) continue;
-    aTotal += sc.a;
-    bTotal += sc.b;
-  }
-  return { aTotal, bTotal };
+function escapeHtml(s) {
+  return String(s)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
 function applyState(s) {
@@ -135,25 +147,23 @@ function applyState(s) {
   const { aTotal, bTotal } = computeTotals(matches);
 
   renderHeader(teamAName, teamBName, aTotal, bTotal);
-
-  // Rosters (из админки)
   renderRoster("rosterA", s?.teamAPlayers);
   renderRoster("rosterB", s?.teamBPlayers);
-
-  // Center list
   renderMatchScores(matches);
 
-  // статус
+  // ✅ статус: сыграно + разница общего счёта
   const playedCount = matches.filter(m => parseScore(m.score)).length;
-  const st = $("statusLine");
-  if (st) st.textContent = Сыграно матчей: ${playedCount};
+  const diff = aTotal - bTotal;
+  const diffText = diff === 0 ? "Разница: 0" : `Разница: ${diff > 0 ? "+" : ""}${diff}`;
 
-  // кеш (на случай простоя/рестарта)
+  const st = $("statusLine");
+  if (st) st.textContent = `Сыграно матчей: ${playedCount} • ${diffText}`;
+
+  // кеш на случай простоя/рестарта
   saveCache({
     teamA: teamAName,
     teamB: teamBName,
-    teamAPlayers: s?.
-teamAPlayers ?? [],
+    teamAPlayers: s?.teamAPlayers ?? [],
     teamBPlayers: s?.teamBPlayers ?? [],
     matches
   });
@@ -166,12 +176,12 @@ socket.on("connect", () => {
 });
 
 socket.on("state", (s) => {
-  // если сервер прислал пусто — восстановим из localStorage
+  // если сервер прислал пусто — берём кеш
   const hasData =
-    (s?.teamA  s?.teamB) 
-    (Array.isArray(s?.matches) && s.matches.some(m => String(m?.score  "").trim())) 
-    (Array.isArray(s?.teamAPlayers) && s.teamAPlayers.length) ||
-    (Array.isArray(s?.teamBPlayers) && s.teamBPlayers.length);
+    (s?.teamA || s?.teamB) ||
+    (Array.isArray(s?.matches) && s.matches.some(m => String(m?.score || "").trim())) ||
+    (Array.isArray(s?.teamAPlayers) && s.teamAPlayers.some(x => String(x || "").trim())) ||
+    (Array.isArray(s?.teamBPlayers) && s.teamBPlayers.some(x => String(x || "").trim()));
 
   if (!hasData) {
     const cached = loadCache();
