@@ -233,38 +233,62 @@ socket.on("connect", () => {
 });
 
 socket.on("state", (s) => {
-  state = s;
+  state = s || {};
 
-  // восстановление UI из localStorage, если сервер после рестарта пустой
   const local = loadLocal();
-  const looksReset =
-    Number(s?.a3 ?? 0) === 0 &&
-    Number(s?.b3 ?? 0) === 0 &&
-    (!s?.teamA && !s?.teamB);
+  const serverUpdated = Number(state.updatedAt || 0);
+  const localUpdated  = Number(local?.updatedAt || 0);
 
-  if (looksReset && local) {
-    socket.emit("setState", local);
-    return;
-  }
-
-  fill(s);
+  // сервер “пустой” (после рестарта/простоя)
+  const serverLooksEmpty =
+    (!state.teamA && !state.teamB) &&
+    Number(state.a3 || 0) === 0 &&
+    Number(state.b3 || 0) === 0 &&
+    (!Array.isArray(state.matches) || state.matches.every(m => !String(m?.score || "").trim()));
 
   // matches: берём серверные, иначе локальные, иначе дефолт
-  const serverMatches = Array.isArray(s?.matches) ? s.matches : null;
+  const serverMatches = Array.isArray(state?.matches) ? state.matches : null;
   const localMatches = loadMatchesLocal();
   const useMatches =
     (serverMatches && serverMatches.length ? serverMatches : null) ||
     (localMatches && localMatches.length ? localMatches : null) ||
     DEFAULT_MATCHES;
 
+  // ✅ если локальные новее ИЛИ сервер пустой — поднимаем локальные
+  if (local && (serverLooksEmpty || localUpdated > serverUpdated)) {
+    const patch = { ...local, matches: useMatches, updatedAt: Date.now() };
+    socket.emit("setState", patch);
+
+    // важно: сразу отрисуем локально, чтобы форма не мигала/не затиралась
+    fill(patch);
+    window.__matches = patch.matches || useMatches;
+    renderAdminMatches(window.__matches);
+    saveMatchesLocal(window.__matches);
+    return;
+  }
+
+  // ✅ иначе применяем сервер
+  fill(state);
+
   window.__matches = useMatches;
   renderAdminMatches(useMatches);
   saveMatchesLocal(useMatches);
 
-  // сохраняем локально всё состояние
+  // ✅ ВАЖНО: сохраняем именно серверное состояние + useMatches (а НЕ buildPatchFromUI)
   saveLocal({
-    ...buildPatchFromUI(),
-    matches: useMatches
+    mode: state.mode ?? "tournament",
+    teamA: state.teamA ?? "",
+    teamB: state.teamB ?? "",
+    maxPoints: state.maxPoints ?? 11,
+    hudPosition: state.hudPosition ?? "tl",
+    hudBg: state.hudBg ?? "transparent",
+    a3: state.a3 ?? 0,
+    b3: state.b3 ?? 0,
+    hudVisible: state.hudVisible ?? true,
+    teamAPlayers: Array.isArray(state.teamAPlayers) ? state.teamAPlayers : ["", "", ""],
+    teamBPlayers: Array.isArray(state.teamBPlayers) ? state.teamBPlayers : ["", "", ""],
+    matches: useMatches,
+    updatedAt: serverUpdated || Date.now(),
   });
 });
 
