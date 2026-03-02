@@ -6,17 +6,12 @@ const MATCHES_KEY = "padel_matches_v1";
 
 let state = null;
 
-const DEFAULT_MATCHES = [
-  { id: 1, a: "", b: "", score: "" },
-  { id: 2, a: "", b: "", score: "" },
-  { id: 3, a: "", b: "", score: "" },
-  { id: 4, a: "", b: "", score: "" },
-  { id: 5, a: "", b: "", score: "" },
-  { id: 6, a: "", b: "", score: "" },
-  { id: 7, a: "", b: "", score: "" },
-  { id: 8, a: "", b: "", score: "" },
-  { id: 9, a: "", b: "", score: "" },
-];
+const DEFAULT_MATCHES = Array.from({ length: 9 }, (_, i) => ({
+  id: i + 1, a: "", b: "", score: ""
+}));
+
+// ---------- helpers ----------
+function now() { return Date.now(); }
 
 function clamp(n, min, max) {
   n = Number(n);
@@ -32,6 +27,46 @@ function normalizeTournament(a, b, N) {
   return { N, a, b };
 }
 
+function safeStr(v) {
+  return String(v ?? "").trim();
+}
+
+function sanitizePlayers(arr) {
+  const base = Array.isArray(arr) ? arr : ["", "", ""];
+  const out = [base[0], base[1], base[2]].map(safeStr);
+  while (out.length < 3) out.push("");
+  return out.slice(0, 3);
+}
+
+function sanitizeMatches(arr) {
+  const base = Array.isArray(arr) ? arr : DEFAULT_MATCHES;
+  const out = base.slice(0, 9).map((m, i) => ({
+    id: i + 1,
+    a: safeStr(m?.a),
+    b: safeStr(m?.b),
+    score: safeStr(m?.score),
+  }));
+  while (out.length < 9) out.push({ id: out.length + 1, a: "", b: "", score: "" });
+  return out;
+}
+
+function hasMeaningfulData(p) {
+  const teamNames = (safeStr(p?.teamA) && safeStr(p?.teamA) !== "Команда A") ||
+                    (safeStr(p?.teamB) && safeStr(p?.teamB) !== "Команда B");
+
+  const players = [...(p?.teamAPlayers  []), ...(p?.teamBPlayers  [])]
+    .map(safeStr).some(Boolean);
+
+  const score = (Number(p?.a3  0) !== 0)  (Number(p?.b3 || 0) !== 0);
+
+  const matches = Array.isArray(p?.matches) && p.matches.some(m =>
+    safeStr(m?.a)  safeStr(m?.b)  safeStr(m?.score)
+  );
+
+  return teamNames  players  score || matches;
+}
+
+// ---------- local storage ----------
 function loadLocal() {
   try {
     const raw = localStorage.getItem(LS_KEY);
@@ -65,9 +100,11 @@ function saveMatchesLocal(matches) {
   } catch (_) {}
 }
 
+// ---------- UI ----------
 function updateTeamRowTitles() {
-  const aName = ($("teamA").value || "Команда A").trim() || "Команда A";
-  const bName = ($("teamB").value || "Команда B").trim() || "Команда B";
+  const aName = ($("teamA").value  "Команда A").trim()  "Команда A";
+  const bName = ($("teamB").value  "Команда B").trim()  "Команда B";
+
   $("teamRowA").textContent = aName;
   $("teamRowB").textContent = bName;
 
@@ -88,8 +125,9 @@ function fill(s) {
   $("b3").value = s.b3 ?? 0;
 
   // составы
-  const aP = Array.isArray(s.teamAPlayers) ? s.teamAPlayers : ["", "", ""];
-  const bP = Array.isArray(s.teamBPlayers) ? s.teamBPlayers : ["", "", ""];
+  const aP = sanitizePlayers(s.teamAPlayers);
+  const bP = sanitizePlayers(s.teamBPlayers);
+
   $("aP1").value = aP[0] ?? "";
   $("aP2").value = aP[1] ?? "";
   $("aP3").value = aP[2] ?? "";
@@ -115,19 +153,22 @@ function renderAdminMatches(matches) {
       <td>${idx + 1}</td>
       <td><input data-k="a" data-i="${idx}" class="matchIn" placeholder="Игрок 1 / Игрок 2" value="${m.a || ""}" /></td>
       <td><input data-k="b" data-i="${idx}" class="matchIn" placeholder="Игрок 1 / Игрок 2" value="${m.b || ""}" /></td>
-      <td><input data-k="score" data-i="${idx}" class="matchIn" placeholder="21:17" value="${m.score || ""}" /></td>
+
+<td><input data-k="score" data-i="${idx}" class="matchIn" placeholder="21:17" value="${m.score || ""}" /></td>
     `;
     body.appendChild(tr);
 
-    // сохраняем локально при вводе, чтобы не “слетало”
+    // ✅ сохраняем локально при любом вводе (без отправки на сервер)
     tr.querySelectorAll(".matchIn").forEach((el) => {
       el.addEventListener("input", () => {
         window.__matches = collectAdminMatches();
         saveMatchesLocal(window.__matches);
+        saveDraftOnly(); // ✅ чтобы НЕ терялось
       });
       el.addEventListener("change", () => {
         window.__matches = collectAdminMatches();
         saveMatchesLocal(window.__matches);
+        saveDraftOnly();
       });
     });
   });
@@ -144,18 +185,14 @@ function collectAdminMatches() {
     const i = Number(el.getAttribute("data-i"));
     const k = el.getAttribute("data-k");
     if (!Number.isFinite(i) || !next[i]) return;
-    next[i][k] = String(el.value ?? "").trim();
+    next[i][k] = safeStr(el.value);
   });
 
-  return next.map((m, i) => ({
-    id: m.id ?? (i + 1),
-    a: m.a || "",
-    b: m.b || "",
-    score: m.score || ""
-  }));
+  return sanitizeMatches(next);
 }
 
-function buildPatchFromUI() {
+// ---------- build state ----------
+function buildPatchFromUI({ touchUpdatedAt } = { touchUpdatedAt: true }) {
   const rawN = $("maxPoints").value;
   const rawA = $("a3").value;
   const rawB = $("b3").value;
@@ -171,8 +208,13 @@ function buildPatchFromUI() {
   const teamA = $("teamA").value.trim() || "Команда A";
   const teamB = $("teamB").value.trim() || "Команда B";
 
-  const teamAPlayers = [ $("aP1").value, $("aP2").value, $("aP3").value ].map(s => (s || "").trim());
-  const teamBPlayers = [ $("bP1").value, $("bP2").value, $("bP3").value ].map(s => (s || "").trim());
+  const teamAPlayers = sanitizePlayers([ $("aP1").value, $("aP2").value, $("aP3").value ]);
+  const teamBPlayers = sanitizePlayers([ $("bP1").value, $("bP2").value, $("bP3").value ]);
+
+  const matches =
+    (window.__matches && Array.isArray(window.__matches) ? window.__matches : null) ||
+    loadMatchesLocal() ||
+    DEFAULT_MATCHES;
 
   return {
     mode: "tournament",
@@ -186,13 +228,34 @@ function buildPatchFromUI() {
     a3: norm.a,
     b3: norm.b,
     hudVisible: $("showHud") ? $("showHud").checked : true,
-    matches: window.__matches && Array.isArray(window.__matches) ? window.__matches : (loadMatchesLocal() || DEFAULT_MATCHES),
+    matches: sanitizeMatches(matches),
+    updatedAt: touchUpdatedAt ? now() : Number(loadLocal()?.updatedAt  0)  now(),
   };
 }
 
-function emitAll() {
-  const patch = buildPatchFromUI();
+// сохраняем черновик локально (без отправки на сервер)
+function saveDraftOnly() {
+  const patch = buildPatchFromUI({ touchUpdatedAt: true });
   saveLocal(patch);
+}
+
+// отправка на сервер
+function emitAll() {
+  const patch = buildPatchFromUI({ touchUpdatedAt: true });
+
+  // ✅ защита: если patch пустой, а локально раньше было что-то — не затираем
+  const prev = loadLocal();
+  if (!hasMeaningfulData(patch) && hasMeaningfulData(prev)) {
+    // просто вернём UI из локального, чтобы не “слетело”
+    fill(prev);
+    window.__matches = sanitizeMatches(prev.matches  loadMatchesLocal()  DEFAULT_MATCHES);
+    renderAdminMatches(window.__matches);
+    return;
+  }
+
+  saveLocal(patch);
+  saveMatchesLocal(patch.matches);
+
   socket.emit("setState", patch);
 }
 
@@ -217,17 +280,27 @@ function applyDelta(team, delta) {
   emitAll();
 }
 
-// boot matches
+// ---------- boot ----------
 const bootLocalMatches = loadMatchesLocal();
 if (bootLocalMatches) {
-  window.__matches = bootLocalMatches;
-  renderAdminMatches(bootLocalMatches);
+  window.__matches = sanitizeMatches(bootLocalMatches);
+  renderAdminMatches(window.__matches);
 } else {
   window.__matches = DEFAULT_MATCHES;
   renderAdminMatches(DEFAULT_MATCHES);
 }
 
-// socket
+// при открытии страницы — сначала пытаемся заполнить из localStorage, чтобы ничего не мигало
+const bootLocal = loadLocal();
+
+Ivan Kalmykov, [02.03.2026 10:09]
+if (bootLocal && hasMeaningfulData(bootLocal)) {
+  fill(bootLocal);
+  window.__matches = sanitizeMatches(bootLocal.matches  loadMatchesLocal()  DEFAULT_MATCHES);
+  renderAdminMatches(window.__matches);
+}
+
+// ---------- socket ----------
 socket.on("connect", () => {
   socket.emit("getState");
 });
@@ -236,63 +309,42 @@ socket.on("state", (s) => {
   state = s || {};
 
   const local = loadLocal();
-  const serverUpdated = Number(state.updatedAt || 0);
-  const localUpdated  = Number(local?.updatedAt || 0);
+  const sAt = Number(state.updatedAt || 0);
+  const lAt = Number(local?.updatedAt || 0);
 
-  // сервер “пустой” (после рестарта/простоя)
-  const serverLooksEmpty =
-    (!state.teamA && !state.teamB) &&
-    Number(state.a3 || 0) === 0 &&
-    Number(state.b3 || 0) === 0 &&
-    (!Array.isArray(state.matches) || state.matches.every(m => !String(m?.score || "").trim()));
+  // ✅ если сервер пустой/старый, а локалка свежее — восстановим сервер локалкой
+  const serverLooksEmpty = !hasMeaningfulData(state);
 
-  // matches: берём серверные, иначе локальные, иначе дефолт
-  const serverMatches = Array.isArray(state?.matches) ? state.matches : null;
-  const localMatches = loadMatchesLocal();
-  const useMatches =
-    (serverMatches && serverMatches.length ? serverMatches : null) ||
-    (localMatches && localMatches.length ? localMatches : null) ||
-    DEFAULT_MATCHES;
-
-  // ✅ если локальные новее ИЛИ сервер пустой — поднимаем локальные
-  if (local && (serverLooksEmpty || localUpdated > serverUpdated)) {
-    const patch = { ...local, matches: useMatches, updatedAt: Date.now() };
-    socket.emit("setState", patch);
-
-    // важно: сразу отрисуем локально, чтобы форма не мигала/не затиралась
-    fill(patch);
-    window.__matches = patch.matches || useMatches;
-    renderAdminMatches(window.__matches);
-    saveMatchesLocal(window.__matches);
+  if (local && hasMeaningfulData(local) && (serverLooksEmpty || (lAt && lAt > sAt))) {
+    // пушим локалку на сервер, но НЕ перетираем localStorage
+    socket.emit("setState", { ...local, updatedAt: local.updatedAt || now() });
     return;
   }
 
-  // ✅ иначе применяем сервер
+  // иначе — применяем сервер
   fill(state);
 
-  window.__matches = useMatches;
-  renderAdminMatches(useMatches);
-  saveMatchesLocal(useMatches);
+  const serverMatches = Array.isArray(state.matches) ? state.matches : null;
+  const useMatches =
+    (serverMatches && serverMatches.length ? serverMatches : null) ||
+    (loadMatchesLocal()  null) 
+    DEFAULT_MATCHES;
 
-  // ✅ ВАЖНО: сохраняем именно серверное состояние + useMatches (а НЕ buildPatchFromUI)
-  saveLocal({
-    mode: state.mode ?? "tournament",
-    teamA: state.teamA ?? "",
-    teamB: state.teamB ?? "",
-    maxPoints: state.maxPoints ?? 11,
-    hudPosition: state.hudPosition ?? "tl",
-    hudBg: state.hudBg ?? "transparent",
-    a3: state.a3 ?? 0,
-    b3: state.b3 ?? 0,
-    hudVisible: state.hudVisible ?? true,
-    teamAPlayers: Array.isArray(state.teamAPlayers) ? state.teamAPlayers : ["", "", ""],
-    teamBPlayers: Array.isArray(state.teamBPlayers) ? state.teamBPlayers : ["", "", ""],
-    matches: useMatches,
-    updatedAt: serverUpdated || Date.now(),
-  });
+  window.__matches = sanitizeMatches(useMatches);
+  renderAdminMatches(window.__matches);
+  saveMatchesLocal(window.__matches);
+
+  // сохраняем локально то, что пришло с сервера (с updatedAt)
+  const patchForLocal = {
+    ...buildPatchFromUI({ touchUpdatedAt: false }),
+    ...state,
+    matches: window.__matches,
+    updatedAt: sAt || now(),
+  };
+  saveLocal(patchForLocal);
 });
 
-// buttons
+// ---------- buttons ----------
 $("apply").addEventListener("click", emitAll);
 
 $("reset").addEventListener("click", () => {
@@ -305,17 +357,26 @@ $("aMinus").addEventListener("click", () => applyDelta("A", -1));
 $("bPlus").addEventListener("click", () => applyDelta("B", +1));
 $("bMinus").addEventListener("click", () => applyDelta("B", -1));
 
-// inputs
+// ✅ сохраняем локально при вводе (не ждём blur/change)
+[
+  "teamA","teamB","maxPoints","hudPosition","hudBg","a3","b3",
+  "aP1","aP2","aP3","bP1","bP2","bP3"
+].forEach((id) => {
+  const el = $(id);
+  if (!el) return;
+  el.addEventListener("input", () => saveDraftOnly());
+  el.addEventListener("change", () => emitAll());
+});
+
 ["teamA", "teamB"].forEach((id) => {
-  $(id).addEventListener("input", updateTeamRowTitles);
-  $(id).addEventListener("change", emitAll);
+  const el = $(id);
+  if (!el) return;
+  el.addEventListener("input", updateTeamRowTitles);
 });
 
-["maxPoints", "hudPosition", "hudBg", "a3", "b3", "aP1", "aP2", "aP3", "bP1", "bP2", "bP3"].forEach((id) => {
-  $(id).addEventListener("change", emitAll);
-});
-
-if ($("showHud")) $("showHud").addEventListener("change", emitAll);
+if ($("showHud")) {
+  $("showHud").addEventListener("change", emitAll);
+}
 
 // preview toggle
 const previewBox = $("previewBox");
@@ -337,7 +398,6 @@ if (saveBtn) {
     window.__matches = matches;
     saveMatchesLocal(matches);
 
-    // отправляем на сервер через общий state
     emitAll();
 
     const hintEl = $("matchesSavedHint");
@@ -352,7 +412,7 @@ const clearBtn = $("clearMatches");
 if (clearBtn) {
   clearBtn.addEventListener("click", (e) => {
     e.preventDefault();
-    const cleared = (window.__matches || DEFAULT_MATCHES).map((m) => ({ ...m, a:"", b:"", score:"" }));
+    const cleared = DEFAULT_MATCHES.map((m) => ({ ...m }));
     window.__matches = cleared;
     saveMatchesLocal(cleared);
     renderAdminMatches(cleared);
