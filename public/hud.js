@@ -3,6 +3,7 @@ const $ = (id) => document.getElementById(id);
 
 const hud = $("hud");
 const meta = $("meta");
+const totalScoreEl = $("totalScore");
 
 function setPos(pos) {
   hud.classList.remove("pos-tl", "pos-tr", "pos-bl", "pos-br");
@@ -49,14 +50,12 @@ function updateMetaTournament(s) {
   let left = N - (a + b);
   if (!Number.isFinite(left)) left = 0;
 
-  // Финальный/осталось
   if (left === 1) {
     meta.textContent = "финальный розыгрыш";
     meta.style.display = "inline-flex";
     return;
   }
 
-  // Победа (когда дошли до 0 или перелетели)
   if (left <= 0) {
     const nameA = (s.teamA ?? "TEAM A").trim() || "TEAM A";
     const nameB = (s.teamB ?? "TEAM B").trim() || "TEAM B";
@@ -74,31 +73,44 @@ function updateMetaTournament(s) {
 }
 
 /**
- * Делает ширину обеих строк одинаковой (по самой широкой из них).
+ * 🔥 Новый расчет общего счета
  */
-function syncRowWidths() {
-  // сбрасываем, чтобы корректно перемерить
-  hud.style.removeProperty("--rowW");
+function calculateTotalScore(s) {
+  let totalA = 0;
+  let totalB = 0;
 
-  requestAnimationFrame(() => {
-    const rows = hud.querySelectorAll(".row");
-    let maxW = 0;
+  if (!Array.isArray(s.matches)) return { totalA, totalB };
 
-    rows.forEach((r) => {
-      // scrollWidth чаще точнее при max-content
-      const w = Math.ceil(Math.max(r.offsetWidth, r.scrollWidth));
-      if (w > maxW) maxW = w;
-    });
+  s.matches.forEach((m) => {
+    if (!m.score) return;
 
-    if (maxW > 0) {
-      hud.style.setProperty("--rowW", `${maxW}px`);
-    }
+    const parts = m.score.split(":");
+    if (parts.length !== 2) return;
+
+    const a = parseInt(parts[0], 10);
+    const b = parseInt(parts[1], 10);
+
+    if (!isNaN(a)) totalA += a;
+    if (!isNaN(b)) totalB += b;
   });
+
+  return { totalA, totalB };
+}
+
+function updateTotalScore(s) {
+  const { totalA, totalB } = calculateTotalScore(s);
+
+  const nameA = (s.teamA ?? "TEAM A").trim() || "TEAM A";
+  const nameB = (s.teamB ?? "TEAM B").trim() || "TEAM B";
+
+  totalScoreEl.textContent = `общий счет: ${nameA} ${totalA} : ${totalB} ${nameB}`;
+  totalScoreEl.style.display = "inline-flex";
 }
 
 socket.on("state", (s) => {
   hud.style.display = (s.hudVisible ?? true) ? "flex" : "none";
   if (!(s.hudVisible ?? true)) return;
+
   $("teamA").textContent = s.teamA ?? "TEAM A";
   $("teamB").textContent = s.teamB ?? "TEAM B";
 
@@ -109,7 +121,5 @@ socket.on("state", (s) => {
   setBg(s.hudBg);
 
   updateMetaTournament(s);
-
-  // ✅ ширина строк подгоняется под самую длинную
-  // syncRowWidths();
+  updateTotalScore(s);
 });
