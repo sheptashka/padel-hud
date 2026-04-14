@@ -5,6 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Padel HUD</title>
   <link rel="stylesheet" href="/style.css" />
+  <style>
+    .serveDot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: #ffffff;
+      flex: 0 0 10px;
+      box-shadow: 0 0 8px rgba(255,255,255,.75);
+      opacity: 0;
+      transition: opacity .15s ease;
+      align-self: center;
+    }
+
+    .serveDot.show {
+      opacity: 1;
+    }
+  </style>
 </head>
 <body class="overlay">
   <div id="hud" class="hud pos-tl bg-transparent">
@@ -12,6 +29,7 @@
       <div class="team" id="teamA">TEAM A</div>
       <div class="score">
         <div class="box" id="a3">0</div>
+        <div class="serveDot" id="serveA"></div>
       </div>
     </div>
 
@@ -19,12 +37,11 @@
       <div class="team" id="teamB">TEAM B</div>
       <div class="score">
         <div class="box" id="b3">0</div>
+        <div class="serveDot" id="serveB"></div>
       </div>
     </div>
 
     <div class="meta" id="meta"></div>
-
-    <!-- 🔥 НОВОЕ -->
     <div class="meta" id="totalScore"></div>
   </div>
 

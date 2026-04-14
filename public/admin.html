@@ -5,6 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Padel HUD — Админка</title>
   <link rel="stylesheet" href="/style.css" />
+  <style>
+    .serveStart {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      font-size: 12px;
+      opacity: .92;
+      user-select: none;
+    }
+
+    .serveStart input {
+      width: 16px;
+      height: 16px;
+      margin: 0;
+      accent-color: #ffffff;
+      cursor: pointer;
+    }
+
+    .serveStartWrap {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 6px;
+    }
+  </style>
 </head>
 
 <body class="admin">
@@ -12,7 +37,6 @@
     <h1>Padel HUD — Админка</h1>
 
     <div class="card matchesCard">
-
       <div class="grid2">
         <div>
           <label>Команда A</label>
@@ -56,7 +80,6 @@
         </div>
       </div>
 
-      <!-- Составы -->
       <div class="card" style="margin-top:14px;">
         <h2 style="margin:0 0 10px; font-size:16px;">Составы команд</h2>
 
@@ -90,30 +113,47 @@
         </div>
       </div>
 
-      <!-- Очки HUD -->
       <div class="teamsPanel compact">
-        <div class="teamRow compact">
-          <div class="teamRowTitle" id="teamRowA">Команда A</div>
-          <button class="btn compact" id="aMinus" aria-label="A minus">−</button>
+        <div>
+          <div class="teamRow compact">
+            <div class="teamRowTitle" id="teamRowA">Команда A</div>
+            <button class="btn compact" id="aMinus" aria-label="A minus">−</button>
 
-          <div class="scorePill compact">
-            <div class="scorePillLabel">Очки A</div>
-            <input class="scorePillInput compact" id="a3" type="number" min="0" step="1" />
+            <div class="scorePill compact">
+              <div class="scorePillLabel">Очки A</div>
+              <input class="scorePillInput compact" id="a3" type="number" min="0" step="1" />
+            </div>
+
+            <button class="btn compact" id="aPlus" aria-label="A plus">+</button>
           </div>
 
-          <button class="btn compact" id="aPlus" aria-label="A plus">+</button>
+          <div class="serveStartWrap">
+            <label class="serveStart">
+              <input type="checkbox" id="firstServerA" />
+              Команда начинает подавать
+            </label>
+          </div>
         </div>
 
-        <div class="teamRow compact">
-          <div class="teamRowTitle" id="teamRowB">Команда B</div>
-          <button class="btn compact" id="bMinus" aria-label="B minus">−</button>
+        <div>
+          <div class="teamRow compact">
+            <div class="teamRowTitle" id="teamRowB">Команда B</div>
+            <button class="btn compact" id="bMinus" aria-label="B minus">−</button>
 
-          <div class="scorePill compact">
-            <div class="scorePillLabel">Очки B</div>
-            <input class="scorePillInput compact" id="b3" type="number" min="0" step="1" />
+            <div class="scorePill compact">
+              <div class="scorePillLabel">Очки B</div>
+              <input class="scorePillInput compact" id="b3" type="number" min="0" step="1" />
+            </div>
+
+            <button class="btn compact" id="bPlus" aria-label="B plus">+</button>
           </div>
 
-          <button class="btn compact" id="bPlus" aria-label="B plus">+</button>
+          <div class="serveStartWrap">
+            <label class="serveStart">
+              <input type="checkbox" id="firstServerB" />
+              Команда начинает подавать
+            </label>
+          </div>
         </div>
       </div>
 
@@ -122,7 +162,6 @@
         <button class="danger" id="reset">Сбросить счет</button>
       </div>
 
-      <!-- ===== Matches ===== -->
       <div class="card" style="margin-top:14px;">
         <h2 style="margin:0 0 10px; font-size:16px;">Матчи турнира (3×3)</h2>
         <div class="hint">Вводи счёт вида <b>21:17</b>. Победа считается автоматически по счёту.</div>
@@ -158,7 +197,6 @@
         </div>
       </div>
 
-      <!-- ===== Preview + HUD toggle ===== -->
       <div class="previewWrap">
         <div class="previewHead">
           <div class="previewTitle">Превью</div>
@@ -178,7 +216,6 @@
           <iframe src="/hud.html"></iframe>
         </div>
       </div>
-
     </div>
   </div>
 

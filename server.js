@@ -23,13 +23,13 @@ const DEFAULT_STATE = {
   a3: 0,
   b3: 0,
   hudVisible: true,
+  firstServer: "", // "A" | "B" | ""
   matches: EMPTY_MATCHES(),
-  updatedAt: Date.now(), // ✅ важно
+  updatedAt: Date.now(),
 };
 
 let state = { ...DEFAULT_STATE };
 
-// --- helpers ---
 function isObj(x) {
   return x && typeof x === "object" && !Array.isArray(x);
 }
@@ -51,25 +51,27 @@ function sanitizePlayers(arr) {
 function sanitizeMatches(arr) {
   const base = Array.isArray(arr) ? arr : EMPTY_MATCHES();
   const out = base.slice(0, 9).map((m, i) => ({
-    id: (m && m.id) ? Number(m.id) : i + 1,
+    id: i + 1,
     a: String(m?.a ?? "").trim(),
     b: String(m?.b ?? "").trim(),
     score: String(m?.score ?? "").trim(),
   }));
-  while (out.length < 9) out.push({ id: out.length + 1, a: "", b: "", score: "" });
-  // нормализуем id на 1..9 (чтобы всегда было стабильно)
+  while (out.length < 9) {
+    out.push({ id: out.length + 1, a: "", b: "", score: "" });
+  }
   return out.map((m, i) => ({ ...m, id: i + 1 }));
 }
 
+function sanitizeFirstServer(value) {
+  return value === "A" || value === "B" ? value : "";
+}
+
 function sanitizePatch(patch) {
-  // берём только известные поля, чтобы случайно не затащить мусор
   const p = {};
 
   if (typeof patch.mode === "string") p.mode = patch.mode;
-
   if (patch.teamA !== undefined) p.teamA = String(patch.teamA ?? "").trim();
   if (patch.teamB !== undefined) p.teamB = String(patch.teamB ?? "").trim();
-
   if (patch.maxPoints !== undefined) p.maxPoints = clampInt(patch.maxPoints, 1, 9999);
 
   if (typeof patch.hudPosition === "string") p.hudPosition = patch.hudPosition;
@@ -79,13 +81,12 @@ function sanitizePatch(patch) {
   if (patch.b3 !== undefined) p.b3 = clampInt(patch.b3, 0, 9999);
 
   if (patch.hudVisible !== undefined) p.hudVisible = !!patch.hudVisible;
+  if (patch.firstServer !== undefined) p.firstServer = sanitizeFirstServer(patch.firstServer);
 
   if (patch.teamAPlayers !== undefined) p.teamAPlayers = sanitizePlayers(patch.teamAPlayers);
   if (patch.teamBPlayers !== undefined) p.teamBPlayers = sanitizePlayers(patch.teamBPlayers);
-
   if (patch.matches !== undefined) p.matches = sanitizeMatches(patch.matches);
 
-  // updatedAt отдельно
   const ua = Number(patch.updatedAt);
   if (Number.isFinite(ua) && ua > 0) p.updatedAt = ua;
 
@@ -104,42 +105,35 @@ io.on("connection", (socket) => {
 
     const clean = sanitizePatch(patch);
 
-    // ✅ защита от “старых” апдейтов
     const incomingUpdatedAt = Number(clean.updatedAt || 0);
     const currentUpdatedAt = Number(state.updatedAt || 0);
-
-    // если patch не прислал updatedAt — считаем, что он “сейчас”
     const effectiveUpdatedAt = incomingUpdatedAt || Date.now();
 
-    // если к нам прилетел очень старый patch — игнорируем
     if (incomingUpdatedAt && currentUpdatedAt && incomingUpdatedAt < currentUpdatedAt) {
-      // можно вернуть актуальный state отправителю, чтобы UI выровнялся
       socket.emit("state", state);
       return;
     }
 
-    // merge
     state = {
       ...state,
       ...clean,
       updatedAt: effectiveUpdatedAt,
     };
 
-    // финальная нормализация (на всякий)
     state.teamAPlayers = sanitizePlayers(state.teamAPlayers);
     state.teamBPlayers = sanitizePlayers(state.teamBPlayers);
     state.matches = sanitizeMatches(state.matches);
+    state.firstServer = sanitizeFirstServer(state.firstServer);
 
     io.emit("state", state);
   });
 
   socket.on("reset", () => {
-    // сбрасываем только счёт HUD, не трогаем имена/составы/матчи
     state = {
       ...state,
       a3: 0,
       b3: 0,
-      updatedAt: Date.now(), // ✅ важно
+      updatedAt: Date.now(),
     };
     io.emit("state", state);
   });
