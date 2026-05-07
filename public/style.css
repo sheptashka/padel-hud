@@ -701,3 +701,128 @@ body.match{
   .mCol{ min-height: auto; }
   .mColCenter{ min-height: auto; }
 }
+/* ===================== HUD SPORT STYLE ===================== */
+.hudSport{
+  gap: 10px;
+  padding: 18px;
+  --bgPad: 18px;
+  border-radius: 22px;
+  filter: drop-shadow(0 0 18px rgba(0, 178, 255, .55));
+  transform: scale(1.0);
+}
+
+.hudSport::before{
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(0,70,180,.95), rgba(0,18,70,.95));
+  border: 2px solid rgba(0,210,255,.85);
+  box-shadow:
+    inset 0 0 24px rgba(0,180,255,.35),
+    0 0 22px rgba(0,180,255,.45);
+}
+
+.hudSportHeader{
+  display: grid;
+  grid-template-columns: 22px minmax(260px, 1fr) 170px 170px;
+  gap: 12px;
+  padding: 0 10px 2px;
+}
+
+.hudSportLabel{
+  text-align: center;
+  color: rgba(255,255,255,.78);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+}
+
+.hudSportRow{
+  display: grid;
+  grid-template-columns: 22px minmax(260px, 1fr) 170px 170px;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: rgba(0,20,80,.72);
+  border: 1px solid rgba(0,205,255,.45);
+  box-shadow: inset 0 0 18px rgba(0,170,255,.24);
+}
+
+.hudSportTeam{
+  color: #fff;
+  font-size: 28px;
+  font-weight: 950;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hudSportCurrent{
+  height: 58px;
+  border-radius: 16px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color: #fff;
+  font-size: 40px;
+  font-weight: 950;
+  background: linear-gradient(180deg, rgba(0,150,255,.95), rgba(0,70,190,.95));
+  border: 2px solid rgba(80,230,255,.95);
+  box-shadow:
+    inset 0 0 18px rgba(255,255,255,.18),
+    0 0 18px rgba(0,210,255,.75);
+}
+
+.hudSportTotal{
+  height: 58px;
+  border-radius: 16px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color: rgba(255,255,255,.78);
+  font-size: 36px;
+  font-weight: 950;
+  background: rgba(0,0,0,.12);
+  border-left: 1px solid rgba(120,220,255,.45);
+}
+
+.serveDot{
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 0 12px rgba(255,255,255,.95);
+  opacity: 0;
+  transition: opacity .15s ease;
+  justify-self: center;
+}
+
+.serveDot.show{
+  opacity: 1;
+}
+
+.hudSportMeta{
+  align-self: flex-start;
+  margin-top: 4px;
+  padding: 10px 16px;
+  border-radius: 16px;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 900;
+  background: rgba(0,18,70,.92);
+  border: 1px solid rgba(0,205,255,.45);
+  box-shadow: 0 0 14px rgba(0,140,255,.28);
+}
+
+.bonusBtn{
+  margin-top: 8px;
+  width: 100%;
+  border-color: rgba(0, 200, 255, .55);
+  background: rgba(0, 120, 255, .18);
+  color: #f3f3f3;
+}
+
+.bonusBtn:hover{
+  background: rgba(0, 150, 255, .28);
+}

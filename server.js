@@ -26,6 +26,7 @@ const DEFAULT_STATE = {
   firstServer: "", // "A" | "B" | ""
   matches: EMPTY_MATCHES(),
   updatedAt: Date.now(),
+  serveRallies: 0,
 };
 
 let state = { ...DEFAULT_STATE };
@@ -89,6 +90,7 @@ function sanitizePatch(patch) {
 
   const ua = Number(patch.updatedAt);
   if (Number.isFinite(ua) && ua > 0) p.updatedAt = ua;
+  if (patch.serveRallies !== undefined) p.serveRallies = clampInt(patch.serveRallies, 0, 9999);
 
   return p;
 }

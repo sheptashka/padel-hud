@@ -228,8 +228,8 @@ function buildPatchFromUI({ touchUpdatedAt } = { touchUpdatedAt: true }) {
   const teamA = safeStr($("teamA").value) || "Команда A";
   const teamB = safeStr($("teamB").value) || "Команда B";
 
-  const teamAPlayers = sanitizePlayers([$ ("aP1").value, $("aP2").value, $("aP3").value]);
-  const teamBPlayers = sanitizePlayers([$ ("bP1").value, $("bP2").value, $("bP3").value]);
+  const teamAPlayers = sanitizePlayers([$("aP1").value, $("aP2").value, $("aP3").value]);
+  const teamBPlayers = sanitizePlayers([$("bP1").value, $("bP2").value, $("bP3").value]);
 
   const matches =
     (Array.isArray(window.__matches) ? window.__matches : null)
@@ -376,7 +376,30 @@ $("reset").addEventListener("click", () => {
 $("aPlus").addEventListener("click", () => applyDelta("A", +1));
 $("aMinus").addEventListener("click", () => applyDelta("A", -1));
 $("bPlus").addEventListener("click", () => applyDelta("B", +1));
-$("bMinus").addEventListener("click", () => applyDelta("B", -1));
+
+function applyBonus(team) {
+  const N = Number($("maxPoints").value ?? 11);
+  const a = Number($("a3").value ?? 0);
+  const b = Number($("b3").value ?? 0);
+
+  if (team === "A") {
+    const na = clamp(a + 2, 0, N);
+    const nb = clamp(b, 0, N - na);
+    $("a3").value = na;
+    $("b3").value = nb;
+    emitAll();
+    return;
+  }
+
+  const nb = clamp(b + 2, 0, N);
+  const na = clamp(a, 0, N - nb);
+  $("a3").value = na;
+  $("b3").value = nb;
+  emitAll();
+}
+
+$("aBonus").addEventListener("click", () => applyBonus("A"));
+$("bBonus").addEventListener("click", () => applyBonus("B"));
 
 $("firstServerA").addEventListener("change", () => toggleFirstServer("A"));
 $("firstServerB").addEventListener("change", () => toggleFirstServer("B"));

@@ -5,44 +5,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Padel HUD</title>
   <link rel="stylesheet" href="/style.css" />
-  <style>
-    .serveDot {
-      width: 10px;
-      height: 10px;
-      border-radius: 999px;
-      background: #ffffff;
-      flex: 0 0 10px;
-      box-shadow: 0 0 8px rgba(255,255,255,.75);
-      opacity: 0;
-      transition: opacity .15s ease;
-      align-self: center;
-    }
-
-    .serveDot.show {
-      opacity: 1;
-    }
-  </style>
 </head>
+
 <body class="overlay">
-  <div id="hud" class="hud pos-tl bg-transparent">
-    <div class="row">
-      <div class="team" id="teamA">TEAM A</div>
-      <div class="score">
-        <div class="box" id="a3">0</div>
-        <div class="serveDot" id="serveA"></div>
-      </div>
+  <div id="hud" class="hud hudSport pos-tl bg-transparent">
+    <div class="hudSportHeader">
+      <div></div>
+      <div></div>
+      <div class="hudSportLabel">Текущий счёт</div>
+      <div class="hudSportLabel">Общий счёт</div>
     </div>
 
-    <div class="row">
-      <div class="team" id="teamB">TEAM B</div>
-      <div class="score">
-        <div class="box" id="b3">0</div>
-        <div class="serveDot" id="serveB"></div>
-      </div>
+    <div class="hudSportRow">
+      <div class="serveDot" id="serveA"></div>
+      <div class="hudSportTeam" id="teamA">TEAM A</div>
+      <div class="hudSportCurrent" id="a3">0</div>
+      <div class="hudSportTotal" id="totalA">0</div>
     </div>
 
-    <div class="meta" id="meta"></div>
-    <div class="meta" id="totalScore"></div>
+    <div class="hudSportRow">
+      <div class="serveDot" id="serveB"></div>
+      <div class="hudSportTeam" id="teamB">TEAM B</div>
+      <div class="hudSportCurrent" id="b3">0</div>
+      <div class="hudSportTotal" id="totalB">0</div>
+    </div>
+
+    <div class="hudSportMeta" id="meta"></div>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
