@@ -298,6 +298,27 @@ function applyDelta(team, delta) {
   emitAll();
 }
 
+function applyBonus(team) {
+  const N = Number($("maxPoints").value ?? 11);
+  const a = Number($("a3").value ?? 0);
+  const b = Number($("b3").value ?? 0);
+
+  if (team === "A") {
+    const na = clamp(a + 2, 0, N);
+    const nb = clamp(b, 0, N - na);
+    $("a3").value = na;
+    $("b3").value = nb;
+    emitAll();
+    return;
+  }
+
+  const nb = clamp(b + 2, 0, N);
+  const na = clamp(a, 0, N - nb);
+  $("a3").value = na;
+  $("b3").value = nb;
+  emitAll();
+}
+
 function toggleFirstServer(team) {
   if (team === "A") {
     const next = $("firstServerA").checked ? "A" : "";
@@ -376,27 +397,7 @@ $("reset").addEventListener("click", () => {
 $("aPlus").addEventListener("click", () => applyDelta("A", +1));
 $("aMinus").addEventListener("click", () => applyDelta("A", -1));
 $("bPlus").addEventListener("click", () => applyDelta("B", +1));
-
-function applyBonus(team) {
-  const N = Number($("maxPoints").value ?? 11);
-  const a = Number($("a3").value ?? 0);
-  const b = Number($("b3").value ?? 0);
-
-  if (team === "A") {
-    const na = clamp(a + 2, 0, N);
-    const nb = clamp(b, 0, N - na);
-    $("a3").value = na;
-    $("b3").value = nb;
-    emitAll();
-    return;
-  }
-
-  const nb = clamp(b + 2, 0, N);
-  const na = clamp(a, 0, N - nb);
-  $("a3").value = na;
-  $("b3").value = nb;
-  emitAll();
-}
+$("bMinus").addEventListener("click", () => applyDelta("B", -1));
 
 $("aBonus").addEventListener("click", () => applyBonus("A"));
 $("bBonus").addEventListener("click", () => applyBonus("B"));
@@ -467,3 +468,16 @@ if (clearBtn) {
     emitAll();
   });
 }
+
+// временный фикс: если админка открыта, раз в 5 сек поднимаем актуальный state на сервер
+setInterval(() => {
+  try {
+    const local = loadLocal();
+    if (local && hasMeaningfulData(local)) {
+      socket.emit("setState", {
+        ...local,
+        updatedAt: local.updatedAt || Date.now()
+      });
+    }
+  } catch (_) {}
+}, 5000);

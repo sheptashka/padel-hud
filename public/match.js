@@ -17,21 +17,26 @@ function safeName(v, fallback) {
 }
 
 function saveCache(payload) {
-  try { localStorage.setItem(MATCH_CACHE_KEY, JSON.stringify(payload)); } catch (_) {}
+  try {
+    localStorage.setItem(MATCH_CACHE_KEY, JSON.stringify(payload));
+  } catch (_) {}
 }
+
 function loadCache() {
   try {
     const raw = localStorage.getItem(MATCH_CACHE_KEY);
     if (!raw) return null;
     return JSON.parse(raw);
-  } catch (_) { return null; }
+  } catch (_) {
+    return null;
+  }
 }
 
 function normalizeMatches(matchesFromState) {
   if (!Array.isArray(matchesFromState)) return [];
   return matchesFromState.map((m, i) => ({
     id: m.id ?? (i + 1),
-    score: String(m.score ?? "").trim()
+    score: String(m.score ?? "").trim(),
   }));
 }
 
@@ -45,6 +50,7 @@ function computeTotals(matches) {
     aTotal += sc.a;
     bTotal += sc.b;
   }
+
   return { aTotal, bTotal };
 }
 
@@ -64,7 +70,6 @@ function setLeaderUI(aTotal, bTotal) {
     teamBEl && teamBEl.classList.add("mLeader");
     bEl && bEl.classList.add("mLeader", "mLeaderScore");
   }
-  // ничья — без подсветки
 }
 
 function renderHeader(teamAName, teamBName, aTotal, bTotal) {
@@ -95,7 +100,6 @@ function renderRoster(listId, players) {
 
   clean.forEach((name) => {
     const li = document.createElement("li");
-    // ✅ без чекбоксов, но оставляем место под мини-фото (mAvatar)
     li.innerHTML = `<span class="mAvatar"></span><span class="mName">${escapeHtml(name)}</span>`;
     ul.appendChild(li);
   });
@@ -106,7 +110,6 @@ function renderMatchScores(matches) {
   if (!box) return;
   box.innerHTML = "";
 
-  // ✅ показываем только корректные счёта
   const played = matches
     .map((m, idx) => ({ ...m, idx }))
     .filter((m) => parseScore(m.score));
@@ -139,6 +142,16 @@ function escapeHtml(s) {
     .replaceAll("'", "&#039;");
 }
 
+function hasStateData(s) {
+  return (
+    (s?.teamA && s.teamA !== "Команда A") ||
+    (s?.teamB && s.teamB !== "Команда B") ||
+    (Array.isArray(s?.matches) && s.matches.some(m => String(m?.score || "").trim())) ||
+    (Array.isArray(s?.teamAPlayers) && s.teamAPlayers.some(x => String(x || "").trim())) ||
+    (Array.isArray(s?.teamBPlayers) && s.teamBPlayers.some(x => String(x || "").trim()))
+  );
+}
+
 function applyState(s) {
   const teamAName = safeName(s?.teamA, "Команда A");
   const teamBName = safeName(s?.teamB, "Команда B");
@@ -151,7 +164,6 @@ function applyState(s) {
   renderRoster("rosterB", s?.teamBPlayers);
   renderMatchScores(matches);
 
-  // ✅ статус: сыграно + разница общего счёта
   const playedCount = matches.filter(m => parseScore(m.score)).length;
   const diff = aTotal - bTotal;
   const diffText = diff === 0 ? "Разница: 0" : `Разница: ${diff > 0 ? "+" : ""}${diff}`;
@@ -159,13 +171,12 @@ function applyState(s) {
   const st = $("statusLine");
   if (st) st.textContent = `Сыграно матчей: ${playedCount} • ${diffText}`;
 
-  // кеш на случай простоя/рестарта
   saveCache({
     teamA: teamAName,
     teamB: teamBName,
     teamAPlayers: s?.teamAPlayers ?? [],
     teamBPlayers: s?.teamBPlayers ?? [],
-    matches
+    matches,
   });
 }
 
@@ -176,14 +187,7 @@ socket.on("connect", () => {
 });
 
 socket.on("state", (s) => {
-  // если сервер прислал пусто — берём кеш
-  const hasData =
-    (s?.teamA || s?.teamB) ||
-    (Array.isArray(s?.matches) && s.matches.some(m => String(m?.score || "").trim())) ||
-    (Array.isArray(s?.teamAPlayers) && s.teamAPlayers.some(x => String(x || "").trim())) ||
-    (Array.isArray(s?.teamBPlayers) && s.teamBPlayers.some(x => String(x || "").trim()));
-
-  if (!hasData) {
+  if (!hasStateData(s)) {
     const cached = loadCache();
     if (cached) {
       applyState(cached);

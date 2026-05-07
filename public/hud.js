@@ -1,10 +1,40 @@
 const socket = io();
 const $ = (id) => document.getElementById(id);
 
+const HUD_CACHE_KEY = "padel_hud_cache_v1";
+
 const hud = $("hud");
 const meta = $("meta");
 const serveAEl = $("serveA");
 const serveBEl = $("serveB");
+
+function hasStateData(s) {
+  return (
+    (s?.teamA && s.teamA !== "Команда A") ||
+    (s?.teamB && s.teamB !== "Команда B") ||
+    Number(s?.a3 || 0) !== 0 ||
+    Number(s?.b3 || 0) !== 0 ||
+    (Array.isArray(s?.matches) && s.matches.some(m => String(m?.score || "").trim())) ||
+    (Array.isArray(s?.teamAPlayers) && s.teamAPlayers.some(x => String(x || "").trim())) ||
+    (Array.isArray(s?.teamBPlayers) && s.teamBPlayers.some(x => String(x || "").trim()))
+  );
+}
+
+function saveHudCache(s) {
+  if (!hasStateData(s)) return;
+  try {
+    localStorage.setItem(HUD_CACHE_KEY, JSON.stringify(s));
+  } catch (_) {}
+}
+
+function loadHudCache() {
+  try {
+    const raw = localStorage.getItem(HUD_CACHE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (_) {
+    return null;
+  }
+}
 
 function setPos(pos) {
   hud.classList.remove("pos-tl", "pos-tr", "pos-bl", "pos-br");
@@ -100,7 +130,7 @@ function getCurrentServer(s) {
   const firstServer = s.firstServer === "A" || s.firstServer === "B" ? s.firstServer : "";
   if (!firstServer) return "";
 
-  const serveRallies = Number(s.serveRallies ?? ((Number(s.a3 ?? 0) + Number(s.b3 ?? 0))));
+  const serveRallies = Number(s.serveRallies ?? (Number(s.a3 ?? 0) + Number(s.b3 ?? 0)));
   const totalRallies = Math.max(0, serveRallies);
   const serveBlock = Math.floor(totalRallies / 2);
 
@@ -114,11 +144,7 @@ function updateServeIndicator(s) {
   serveBEl.classList.toggle("show", currentServer === "B");
 }
 
-socket.on("connect", () => {
-  socket.emit("getState");
-});
-
-socket.on("state", (s) => {
+function applyState(s) {
   hud.style.display = (s.hudVisible ?? true) ? "flex" : "none";
   if (!(s.hudVisible ?? true)) return;
 
@@ -137,4 +163,22 @@ socket.on("state", (s) => {
   setBg(s.hudBg);
   updateMetaTournament(s);
   updateServeIndicator(s);
+}
+
+socket.on("connect", () => {
+  socket.emit("getState");
+});
+
+socket.on("state", (s) => {
+  if (!hasStateData(s)) {
+    const cached = loadHudCache();
+    if (cached) {
+      applyState(cached);
+      return;
+    }
+  } else {
+    saveHudCache(s);
+  }
+
+  applyState(s || {});
 });
