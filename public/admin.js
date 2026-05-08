@@ -232,9 +232,9 @@ function buildPatchFromUI({ touchUpdatedAt } = { touchUpdatedAt: true }) {
   const teamBPlayers = sanitizePlayers([$("bP1").value, $("bP2").value, $("bP3").value]);
 
   const matches =
-    (Array.isArray(window.__matches) ? window.__matches : null)
-    || loadMatchesLocal()
-    || DEFAULT_MATCHES;
+    (Array.isArray(window.__matches) ? window.__matches : null) ||
+    loadMatchesLocal() ||
+    DEFAULT_MATCHES;
 
   const local = loadLocal();
 
@@ -369,9 +369,9 @@ socket.on("state", (s) => {
 
   const serverMatches = Array.isArray(state.matches) ? state.matches : null;
   const useMatches =
-    (serverMatches && serverMatches.length ? serverMatches : null)
-    || loadMatchesLocal()
-    || DEFAULT_MATCHES;
+    (serverMatches && serverMatches.length ? serverMatches : null) ||
+    loadMatchesLocal() ||
+    DEFAULT_MATCHES;
 
   window.__matches = sanitizeMatches(useMatches);
   renderAdminMatches(window.__matches);
