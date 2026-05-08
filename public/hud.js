@@ -78,14 +78,18 @@ function calculateTotalScore(s) {
   let totalA = 0;
   let totalB = 0;
 
-  if (!Array.isArray(s.matches)) return { totalA, totalB };
+  if (Array.isArray(s.matches)) {
+    s.matches.forEach((m) => {
+      const sc = parseScore(m?.score);
+      if (!sc) return;
+      totalA += sc.a;
+      totalB += sc.b;
+    });
+  }
 
-  s.matches.forEach((m) => {
-    const sc = parseScore(m?.score);
-    if (!sc) return;
-    totalA += sc.a;
-    totalB += sc.b;
-  });
+  // ✅ добавляем текущий матч из админки
+  totalA += Number(s.a3 || 0);
+  totalB += Number(s.b3 || 0);
 
   return { totalA, totalB };
 }
