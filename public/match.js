@@ -51,8 +51,8 @@ function computeTotals(matches, currentA, currentB) {
     bTotal += sc.b;
   }
 
-  aTotal += Number(currentA  0);
-  bTotal += Number(currentB  0);
+  aTotal += Number(currentA || 0);
+  bTotal += Number(currentB || 0);
 
   return { aTotal, bTotal };
 }
@@ -63,15 +63,20 @@ function setLeaderUI(aTotal, bTotal) {
   const aEl = $("totalA");
   const bEl = $("totalB");
 
-  [teamAEl, teamBEl, aEl, bEl].forEach((x) => x && x.classList.remove("mLeader"));
-  [aEl, bEl].forEach((x) => x && x.classList.remove("mLeaderScore"));
+  [teamAEl, teamBEl, aEl, bEl].forEach((x) => {
+    if (x) x.classList.remove("mLeader");
+  });
+
+  [aEl, bEl].forEach((x) => {
+    if (x) x.classList.remove("mLeaderScore");
+  });
 
   if (aTotal > bTotal) {
-    teamAEl && teamAEl.classList.add("mLeader");
-    aEl && aEl.classList.add("mLeader", "mLeaderScore");
+    if (teamAEl) teamAEl.classList.add("mLeader");
+    if (aEl) aEl.classList.add("mLeader", "mLeaderScore");
   } else if (bTotal > aTotal) {
-    teamBEl && teamBEl.classList.add("mLeader");
-    bEl && bEl.classList.add("mLeader", "mLeaderScore");
+    if (teamBEl) teamBEl.classList.add("mLeader");
+    if (bEl) bEl.classList.add("mLeader", "mLeaderScore");
   }
 }
 
@@ -91,7 +96,7 @@ function renderRoster(listId, players) {
   ul.innerHTML = "";
 
   const arr = Array.isArray(players) ? players : [];
-  const clean = arr.map(x => String(x  "").trim()).filter(Boolean);
+  const clean = arr.map((x) => String(x || "").trim()).filter(Boolean);
 
   if (clean.length === 0) {
     const li = document.createElement("li");
@@ -117,7 +122,7 @@ function renderMatchScores(matches, currentA, currentB) {
     .map((m, idx) => ({ ...m, idx }))
     .filter((m) => parseScore(m.score));
 
-  const currentHasScore = Number(currentA  0) !== 0  Number(currentB  0) !== 0;
+  const currentHasScore = Number(currentA || 0) !== 0 || Number(currentB || 0) !== 0;
   const currentMatchNumber = Math.min(played.length + 1, 9);
 
   const rows = [];
@@ -133,7 +138,7 @@ function renderMatchScores(matches, currentA, currentB) {
   if (currentHasScore && played.length < 9) {
     rows.push({
       idx: currentMatchNumber,
-      score: ${Number(currentA || 0)}:${Number(currentB || 0)},
+      score: `${Number(currentA || 0)}:${Number(currentB || 0)}`,
       live: true,
     });
   }
@@ -149,15 +154,16 @@ function renderMatchScores(matches, currentA, currentB) {
 
   rows.slice(0, 9).forEach((m) => {
     const row = document.createElement("div");
-    row.className = mMatchRow${m.live ? " mMatchRowLive" : ""}${m.empty ? " mMatchRowEmpty" : ""};
+    row.className = `mMatchRow${m.live ? " mMatchRowLive" : ""}${m.empty ? " mMatchRowEmpty" : ""}`;
     row.innerHTML = `
       <div class="mMatchIdx">${m.idx}</div>
       <div class="mMatchScore">${escapeHtml(m.score)}</div>
-      ${m.live ? <div class="mLive">LIVE</div> : <div class="mLiveSpacer"></div>}
+      ${m.live ? `<div class="mLive">LIVE</div>` : `<div class="mLiveSpacer"></div>`}
     `;
     box.appendChild(row);
   });
 }
+
 function escapeHtml(s) {
   return String(s)
     .replaceAll("&", "&amp;")
@@ -169,13 +175,13 @@ function escapeHtml(s) {
 
 function hasStateData(s) {
   return (
-    (s?.teamA && s.teamA !== "Команда A") 
-    (s?.teamB && s.teamB !== "Команда B") 
-    Number(s?.a3  0) !== 0 
-    Number(s?.b3  0) !== 0 
-    (Array.isArray(s?.matches) && s.matches.some(m => String(m?.score  "").trim())) 
-    (Array.isArray(s?.teamAPlayers) && s.teamAPlayers.some(x => String(x  "").trim())) 
-    (Array.isArray(s?.teamBPlayers) && s.teamBPlayers.some(x => String(x  "").trim()))
+    (s?.teamA && s.teamA !== "Команда A") ||
+    (s?.teamB && s.teamB !== "Команда B") ||
+    Number(s?.a3 || 0) !== 0 ||
+    Number(s?.b3 || 0) !== 0 ||
+    (Array.isArray(s?.matches) && s.matches.some((m) => String(m?.score || "").trim())) ||
+    (Array.isArray(s?.teamAPlayers) && s.teamAPlayers.some((x) => String(x || "").trim())) ||
+    (Array.isArray(s?.teamBPlayers) && s.teamBPlayers.some((x) => String(x || "").trim()))
   );
 }
 
@@ -184,8 +190,8 @@ function applyState(s) {
   const teamBName = safeName(s?.teamB, "Команда B");
 
   const matches = normalizeMatches(s?.matches);
-  const currentA = Number(s?.a3  0);
-  const currentB = Number(s?.b3  0);
+  const currentA = Number(s?.a3 || 0);
+  const currentB = Number(s?.b3 || 0);
 
   const { aTotal, bTotal } = computeTotals(matches, currentA, currentB);
 
@@ -194,8 +200,8 @@ function applyState(s) {
   renderRoster("rosterB", s?.teamBPlayers);
   renderMatchScores(matches, currentA, currentB);
 
-  const playedCount = matches.filter(m => parseScore(m.score)).length;
-  const currentHasScore = currentA !== 0  currentB !== 0;
+  const playedCount = matches.filter((m) => parseScore(m.score)).length;
+  const currentHasScore = currentA !== 0 || currentB !== 0;
   const currentMatchNumber = currentHasScore ? Math.min(playedCount + 1, 9) : "—";
 
   const diff = aTotal - bTotal;
@@ -205,7 +211,7 @@ function applyState(s) {
   if (st) {
     st.textContent = currentHasScore
       ? `Сыграно матчей: ${playedCount} из 9 • Идёт матч: ${currentMatchNumber} • ${diffText}`
-      : Сыграно матчей: ${playedCount} из 9 • ${diffText};
+      : `Сыграно матчей: ${playedCount} из 9 • ${diffText}`;
   }
 
   saveCache({
