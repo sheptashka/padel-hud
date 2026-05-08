@@ -40,7 +40,7 @@ function normalizeMatches(matchesFromState) {
   }));
 }
 
-function computeTotals(matches) {
+function computeTotals(matches, currentA, currentB) {
   let aTotal = 0;
   let bTotal = 0;
 
@@ -50,6 +50,9 @@ function computeTotals(matches) {
     aTotal += sc.a;
     bTotal += sc.b;
   }
+
+  aTotal += Number(currentA  0);
+  bTotal += Number(currentB  0);
 
   return { aTotal, bTotal };
 }
@@ -88,24 +91,24 @@ function renderRoster(listId, players) {
   ul.innerHTML = "";
 
   const arr = Array.isArray(players) ? players : [];
-  const clean = arr.map(x => String(x || "").trim()).filter(Boolean);
+  const clean = arr.map(x => String(x  "").trim()).filter(Boolean);
 
   if (clean.length === 0) {
     const li = document.createElement("li");
     li.className = "mMuted";
-    li.innerHTML = `<span class="mAvatar"></span><span class="mName">—</span>`;
+    li.innerHTML = `<span class="mName">—</span>`;
     ul.appendChild(li);
     return;
   }
 
   clean.forEach((name) => {
     const li = document.createElement("li");
-    li.innerHTML = `<span class="mAvatar"></span><span class="mName">${escapeHtml(name)}</span>`;
+    li.innerHTML = `<span class="mName">${escapeHtml(name)}</span>`;
     ul.appendChild(li);
   });
 }
 
-function renderMatchScores(matches) {
+function renderMatchScores(matches, currentA, currentB) {
   const box = $("matchScores");
   if (!box) return;
   box.innerHTML = "";
@@ -114,25 +117,47 @@ function renderMatchScores(matches) {
     .map((m, idx) => ({ ...m, idx }))
     .filter((m) => parseScore(m.score));
 
-  if (played.length === 0) {
-    const empty = document.createElement("div");
-    empty.className = "mEmpty";
-    empty.textContent = "Пока нет сыгранных матчей";
-    box.appendChild(empty);
-    return;
-  }
+  const currentHasScore = Number(currentA  0) !== 0  Number(currentB  0) !== 0;
+  const currentMatchNumber = Math.min(played.length + 1, 9);
+
+  const rows = [];
 
   played.forEach((m) => {
+    rows.push({
+      idx: m.idx + 1,
+      score: m.score.replace("-", ":"),
+      live: false,
+    });
+  });
+
+  if (currentHasScore && played.length < 9) {
+    rows.push({
+      idx: currentMatchNumber,
+      score: ${Number(currentA || 0)}:${Number(currentB || 0)},
+      live: true,
+    });
+  }
+
+  while (rows.length < 9) {
+    rows.push({
+      idx: rows.length + 1,
+      score: "–:–",
+      live: false,
+      empty: true,
+    });
+  }
+
+  rows.slice(0, 9).forEach((m) => {
     const row = document.createElement("div");
-    row.className = "mMatchRow";
+    row.className = mMatchRow${m.live ? " mMatchRowLive" : ""}${m.empty ? " mMatchRowEmpty" : ""};
     row.innerHTML = `
-      <div class="mMatchIdx">${m.idx + 1}</div>
-      <div class="mMatchScore">${escapeHtml(m.score.replace("-", ":"))}</div>
+      <div class="mMatchIdx">${m.idx}</div>
+      <div class="mMatchScore">${escapeHtml(m.score)}</div>
+      ${m.live ? <div class="mLive">LIVE</div> : <div class="mLiveSpacer"></div>}
     `;
     box.appendChild(row);
   });
 }
-
 function escapeHtml(s) {
   return String(s)
     .replaceAll("&", "&amp;")
@@ -144,11 +169,13 @@ function escapeHtml(s) {
 
 function hasStateData(s) {
   return (
-    (s?.teamA && s.teamA !== "Команда A") ||
-    (s?.teamB && s.teamB !== "Команда B") ||
-    (Array.isArray(s?.matches) && s.matches.some(m => String(m?.score || "").trim())) ||
-    (Array.isArray(s?.teamAPlayers) && s.teamAPlayers.some(x => String(x || "").trim())) ||
-    (Array.isArray(s?.teamBPlayers) && s.teamBPlayers.some(x => String(x || "").trim()))
+    (s?.teamA && s.teamA !== "Команда A") 
+    (s?.teamB && s.teamB !== "Команда B") 
+    Number(s?.a3  0) !== 0 
+    Number(s?.b3  0) !== 0 
+    (Array.isArray(s?.matches) && s.matches.some(m => String(m?.score  "").trim())) 
+    (Array.isArray(s?.teamAPlayers) && s.teamAPlayers.some(x => String(x  "").trim())) 
+    (Array.isArray(s?.teamBPlayers) && s.teamBPlayers.some(x => String(x  "").trim()))
   );
 }
 
@@ -157,25 +184,37 @@ function applyState(s) {
   const teamBName = safeName(s?.teamB, "Команда B");
 
   const matches = normalizeMatches(s?.matches);
-  const { aTotal, bTotal } = computeTotals(matches);
+  const currentA = Number(s?.a3  0);
+  const currentB = Number(s?.b3  0);
+
+  const { aTotal, bTotal } = computeTotals(matches, currentA, currentB);
 
   renderHeader(teamAName, teamBName, aTotal, bTotal);
   renderRoster("rosterA", s?.teamAPlayers);
   renderRoster("rosterB", s?.teamBPlayers);
-  renderMatchScores(matches);
+  renderMatchScores(matches, currentA, currentB);
 
   const playedCount = matches.filter(m => parseScore(m.score)).length;
+  const currentHasScore = currentA !== 0  currentB !== 0;
+  const currentMatchNumber = currentHasScore ? Math.min(playedCount + 1, 9) : "—";
+
   const diff = aTotal - bTotal;
   const diffText = diff === 0 ? "Разница: 0" : `Разница: ${diff > 0 ? "+" : ""}${diff}`;
 
   const st = $("statusLine");
-  if (st) st.textContent = `Сыграно матчей: ${playedCount} • ${diffText}`;
+  if (st) {
+    st.textContent = currentHasScore
+      ? `Сыграно матчей: ${playedCount} из 9 • Идёт матч: ${currentMatchNumber} • ${diffText}`
+      : Сыграно матчей: ${playedCount} из 9 • ${diffText};
+  }
 
   saveCache({
     teamA: teamAName,
     teamB: teamBName,
     teamAPlayers: s?.teamAPlayers ?? [],
     teamBPlayers: s?.teamBPlayers ?? [],
+    a3: currentA,
+    b3: currentB,
     matches,
   });
 }
