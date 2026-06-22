@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+  <title>Судья — Теннис</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0b0d12;
+      color: #f3f3f3;
+      font-family: system-ui, -apple-system, sans-serif;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* Modal */
+    .modalOverlay { display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:100;align-items:center;justify-content:center; }
+    .modalOverlay.show { display:flex; }
+    .modalBox { background:#1a1d24;border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:28px 20px 20px;max-width:340px;width:92%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.6); }
+    .modalTitle { font-size:20px;font-weight:800;margin-bottom:8px; }
+    .modalSub { font-size:14px;opacity:.75;margin-bottom:22px;line-height:1.4; }
+    .modalBtns { display:flex;gap:10px;justify-content:center; }
+    .modalBtns button { flex:1;padding:14px 10px;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;border:1px solid transparent; }
+    .modalBtnYes { background:rgba(0,180,100,.25);border-color:rgba(0,220,120,.5);color:#6effb4; }
+    .modalBtnNo  { background:rgba(255,60,60,.18);border-color:rgba(255,90,90,.5);color:#ff8080; }
+    .modalBtnSave{ background:rgba(0,150,255,.25);border-color:rgba(0,200,255,.5);color:#80d8ff; }
+
+    /* Header */
+    .header {
+      padding: 12px 16px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .header-title { font-size: 15px; font-weight: 800; opacity: .85; }
+    .header-games { font-size: 13px; opacity: .6; }
+
+    /* Scoreboard */
+    .scoreboard {
+      padding: 14px 12px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .team-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(0,20,80,.72);
+      border: 1px solid rgba(0,205,255,.35);
+    }
+
+    .team-info { display: flex; align-items: center; gap: 10px; min-width: 0; }
+
+    .serve-dot {
+      width: 14px; height: 14px; flex-shrink: 0;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #fff 0%, #c8e6c9 40%, #81c784 100%);
+      box-shadow: 0 0 8px rgba(255,255,255,.85), 0 0 3px rgba(200,255,200,.6);
+      opacity: 0;
+      transition: opacity .15s;
+    }
+    .serve-dot.show { opacity: 1; }
+
+    .team-name {
+      font-size: 18px; font-weight: 800; text-transform: uppercase;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    .team-point {
+      font-size: 32px; font-weight: 950; min-width: 54px; text-align: center;
+      background: linear-gradient(180deg,rgba(0,150,255,.95),rgba(0,70,190,.95));
+      border: 2px solid rgba(80,230,255,.9);
+      border-radius: 14px;
+      height: 54px; display: flex; align-items: center; justify-content: center;
+      box-shadow: inset 0 0 14px rgba(255,255,255,.18), 0 0 14px rgba(0,210,255,.6);
+    }
+
+    .team-games {
+      font-size: 28px; font-weight: 950; min-width: 44px; text-align: center;
+      color: rgba(255,255,255,.75);
+    }
+
+    /* Deuce banner */
+    .deuce-banner {
+      text-align: center; font-size: 15px; font-weight: 900;
+      color: #ffd60a; letter-spacing: 1px;
+      text-shadow: 0 0 10px rgba(255,210,0,.55);
+      min-height: 22px; padding: 2px 0;
+    }
+
+    /* Action buttons */
+    .actions {
+      padding: 14px 12px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .action-btn {
+      border-radius: 20px;
+      border: 2px solid rgba(0,210,255,.5);
+      background: linear-gradient(135deg,rgba(0,80,200,.85),rgba(0,30,100,.85));
+      color: #fff;
+      font-size: 16px; font-weight: 800;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      padding: 18px 10px;
+      min-height: 100px;
+      transition: background .12s, transform .08s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .action-btn:active { transform: scale(.96); background: linear-gradient(135deg,rgba(0,120,255,.9),rgba(0,60,180,.9)); }
+
+    .action-btn.minus-btn {
+      background: linear-gradient(135deg,rgba(80,0,0,.7),rgba(40,0,0,.7));
+      border-color: rgba(255,80,80,.45);
+      font-size: 22px;
+    }
+    .action-btn.minus-btn:active { background: linear-gradient(135deg,rgba(140,0,0,.85),rgba(80,0,0,.85)); }
+
+    .btn-team { font-size: 12px; opacity: .75; text-transform: uppercase; letter-spacing: .5px; }
+
+    /* Bottom controls */
+    .bottom {
+      padding: 10px 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      border-top: 1px solid rgba(255,255,255,.08);
+    }
+
+    .serve-section { display: flex; gap: 8px; }
+    .serve-btn {
+      flex: 1; padding: 10px 6px; border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.15);
+      background: rgba(255,255,255,.06);
+      color: #f3f3f3; font-size: 12px; font-weight: 700;
+      cursor: pointer; text-align: center;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .serve-btn.active { background: rgba(0,150,255,.28); border-color: rgba(0,210,255,.7); color: #80d8ff; }
+    .serve-btn-dot { width:10px;height:10px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff 0%,#c8e6c9 40%,#81c784 100%);opacity:0;flex-shrink:0; }
+    .serve-btn.active .serve-btn-dot { opacity:1; }
+
+    .bottom-row { display: flex; gap: 8px; }
+    .ctrl-btn {
+      flex: 1; padding: 10px; border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: #f3f3f3; font-size: 12px; font-weight: 700; cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .ctrl-btn.danger { border-color: rgba(255,90,90,.5); color: #ff8080; }
+
+    .maxgames-row { display: flex; align-items: center; gap: 8px; font-size: 12px; opacity: .75; }
+    .maxgames-row input { width:52px;padding:6px 8px;border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.25);color:#f3f3f3;font-size:13px; }
+  </style>
+</head>
+<body>
+
+<!-- Modal game win -->
+<div class="modalOverlay" id="modalGameWin">
+  <div class="modalBox">
+    <div class="modalTitle">Победа в гейме?</div>
+    <div class="modalSub" id="modalGameWinSub"></div>
+    <div class="modalBtns">
+      <button class="modalBtnYes" id="modalGameWinYes">Да ✓</button>
+      <button class="modalBtnNo" id="modalGameWinNo">Нет ✗</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal match win -->
+<div class="modalOverlay" id="modalMatchWin">
+  <div class="modalBox">
+    <div class="modalTitle">Матч завершён!</div>
+    <div class="modalSub" id="modalMatchWinSub"></div>
+    <div class="modalBtns">
+      <button class="modalBtnSave" id="modalMatchWinSave">Сохранить</button>
+      <button class="modalBtnNo" id="modalMatchWinCancel">Отмена</button>
+    </div>
+  </div>
+</div>
+
+<div class="header">
+  <div class="header-title" id="headerTitle">Теннис — Судья</div>
+  <div class="header-games" id="headerGames">Геймов до победы: <span id="headerMaxGames">6</span></div>
+</div>
+
+<div class="scoreboard">
+  <div class="deuce-banner" id="deuceBanner"></div>
+
+  <div class="team-row">
+    <div class="team-info">
+      <div class="serve-dot" id="serveDotA"></div>
+      <div class="team-name" id="teamNameA">Команда A</div>
+    </div>
+    <div class="team-point" id="pointA">0</div>
+    <div class="team-games" id="gamesA">0</div>
+  </div>
+
+  <div class="team-row">
+    <div class="team-info">
+      <div class="serve-dot" id="serveDotB"></div>
+      <div class="team-name" id="teamNameB">Команда B</div>
+    </div>
+    <div class="team-point" id="pointB">0</div>
+    <div class="team-games" id="gamesB">0</div>
+  </div>
+</div>
+
+<div class="actions">
+  <button class="action-btn" id="btnAPlus">
+    <div class="btn-team" id="btnALabel">Команда A</div>
+    <div>+1 очко</div>
+  </button>
+  <button class="action-btn" id="btnBPlus">
+    <div class="btn-team" id="btnBLabel">Команда B</div>
+    <div>+1 очко</div>
+  </button>
+  <button class="action-btn minus-btn" id="btnAMinus">
+    <div class="btn-team">A</div>
+    <div>−</div>
+  </button>
+  <button class="action-btn minus-btn" id="btnBMinus">
+    <div class="btn-team">B</div>
+    <div>−</div>
+  </button>
+</div>
+
+<div class="bottom">
+  <div class="maxgames-row">
+    <span>Геймов до победы:</span>
+    <input id="maxGamesInput" type="number" min="1" value="6" />
+  </div>
+
+  <div class="serve-section">
+    <button class="serve-btn" id="serveA">
+      <span class="serve-btn-dot"></span>
+      <span id="serveLabelA">Команда A</span> подаёт
+    </button>
+    <button class="serve-btn" id="serveB">
+      <span class="serve-btn-dot"></span>
+      <span id="serveLabelB">Команда B</span> подаёт
+    </button>
+    <button class="serve-btn" id="serveNone">Не выбрано</button>
+  </div>
+
+  <div class="bottom-row">
+    <button class="ctrl-btn danger" id="btnReset">Сбросить счёт</button>
+    <button class="ctrl-btn" id="btnBack">← Админка</button>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/tennis.js"></script>
+</body>
+</html>
