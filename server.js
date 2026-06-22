@@ -155,6 +155,29 @@ io.on("connection", (socket) => {
     };
     io.emit("state", state);
   });
+
+  socket.on("saveTennisMatch", (data) => {
+    if (!data || typeof data.score !== "string") return;
+    const score = String(data.score).trim();
+    if (!score) return;
+
+    const matches = Array.isArray(state.matches) ? [...state.matches] : [];
+    const idx = matches.findIndex((m) => !String(m?.score || "").trim());
+    if (idx === -1) return; // no empty row
+
+    const teamA = String(state.teamA || "Команда A").trim();
+    const teamB = String(state.teamB || "Команда B").trim();
+
+    matches[idx] = {
+      ...matches[idx],
+      a: teamA + " (Главный корт)",
+      b: teamB + " (судья)",
+      score,
+    };
+
+    state = { ...state, matches, updatedAt: Date.now() };
+    io.emit("state", state);
+  });
 });
 
 const PORT = process.env.PORT || 10000;
