@@ -118,12 +118,13 @@ function renderMatchScores(matches, currentA, currentB) {
   if (!box) return;
   box.innerHTML = "";
 
+  const total = Math.max(matches.length, 1);
   const played = matches
     .map((m, idx) => ({ ...m, idx }))
     .filter((m) => parseScore(m.score));
 
   const currentHasScore = Number(currentA || 0) !== 0 || Number(currentB || 0) !== 0;
-  const currentMatchNumber = Math.min(played.length + 1, 9);
+  const currentMatchNumber = Math.min(played.length + 1, total);
 
   const rows = [];
 
@@ -135,7 +136,7 @@ function renderMatchScores(matches, currentA, currentB) {
     });
   });
 
-  if (currentHasScore && played.length < 9) {
+  if (currentHasScore && played.length < total) {
     rows.push({
       idx: currentMatchNumber,
       score: `${Number(currentA || 0)}:${Number(currentB || 0)}`,
@@ -143,7 +144,7 @@ function renderMatchScores(matches, currentA, currentB) {
     });
   }
 
-  while (rows.length < 9) {
+  while (rows.length < total) {
     rows.push({
       idx: rows.length + 1,
       score: "–:–",
@@ -152,7 +153,7 @@ function renderMatchScores(matches, currentA, currentB) {
     });
   }
 
-  rows.slice(0, 9).forEach((m) => {
+  rows.slice(0, total).forEach((m) => {
     const row = document.createElement("div");
     row.className = `mMatchRow${m.live ? " mMatchRowLive" : ""}${m.empty ? " mMatchRowEmpty" : ""}`;
     row.innerHTML = `
@@ -201,8 +202,9 @@ function applyState(s) {
   renderMatchScores(matches, currentA, currentB);
 
   const playedCount = matches.filter((m) => parseScore(m.score)).length;
+  const totalMatches = matches.length;
   const currentHasScore = currentA !== 0 || currentB !== 0;
-  const currentMatchNumber = currentHasScore ? Math.min(playedCount + 1, 9) : "—";
+  const currentMatchNumber = currentHasScore ? Math.min(playedCount + 1, totalMatches) : "—";
 
   const diff = aTotal - bTotal;
   const diffText = diff === 0 ? "Разница: 0" : `Разница: ${diff > 0 ? "+" : ""}${diff}`;
@@ -210,8 +212,8 @@ function applyState(s) {
   const st = $("statusLine");
   if (st) {
     st.textContent = currentHasScore
-      ? `Сыграно матчей: ${playedCount} из 9 • Идёт матч: ${currentMatchNumber} • ${diffText}`
-      : `Сыграно матчей: ${playedCount} из 9 • ${diffText}`;
+      ? `Сыграно матчей: ${playedCount} из ${totalMatches} • Идёт матч: ${currentMatchNumber} • ${diffText}`
+      : `Сыграно матчей: ${playedCount} из ${totalMatches} • ${diffText}`;
   }
 
   saveCache({
