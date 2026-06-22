@@ -9,6 +9,7 @@
 
 <body class="overlay">
   <div id="hud" class="hud hudSport pos-tl bg-transparent">
+
     <!-- Tournament mode -->
     <div id="hudTournament">
       <div class="hudSportHeader">
@@ -17,42 +18,36 @@
         <div class="hudSportLabel">Текущий счёт</div>
         <div class="hudSportLabel">Общий счёт</div>
       </div>
-
       <div class="hudSportRow">
         <div class="serveDot" id="serveA"></div>
         <div class="hudSportTeam" id="teamA">TEAM A</div>
         <div class="hudSportCurrent" id="a3">0</div>
         <div class="hudSportTotal" id="totalA">0</div>
       </div>
-
       <div class="hudSportRow">
         <div class="serveDot" id="serveB"></div>
         <div class="hudSportTeam" id="teamB">TEAM B</div>
         <div class="hudSportCurrent" id="b3">0</div>
         <div class="hudSportTotal" id="totalB">0</div>
       </div>
-
       <div class="hudSportMeta" id="meta"></div>
     </div>
 
     <!-- Tennis mode -->
     <div id="hudTennis" style="display:none;">
-      <div class="hudTennisHeader">
+      <div class="hudSportHeader">
         <div></div>
         <div></div>
-        <div class="hudSportLabel">Очки</div>
-        <div class="hudSportLabel">Геймы</div>
+        <div class="hudSportLabel" style="width:110px;text-align:center;">Очки</div>
+        <div class="hudSportLabel" style="width:90px;text-align:center;">Геймы</div>
       </div>
-
       <div id="hudTennisDeuce" class="hudTennisDeuce" style="display:none;">DEUCE</div>
-
       <div class="hudSportRow">
         <div class="serveDot" id="serveAT"></div>
         <div class="hudSportTeam" id="tennisTeamA">TEAM A</div>
         <div class="hudTennisPoint" id="tennisHudPointA">0</div>
         <div class="hudTennisGames" id="tennisHudGamesA">0</div>
       </div>
-
       <div class="hudSportRow">
         <div class="serveDot" id="serveBT"></div>
         <div class="hudSportTeam" id="tennisTeamB">TEAM B</div>
@@ -60,6 +55,7 @@
         <div class="hudTennisGames" id="tennisHudGamesB">0</div>
       </div>
     </div>
+
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
