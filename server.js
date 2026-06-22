@@ -8,8 +8,8 @@ const io = new Server(server);
 
 app.use(express.static("public"));
 
-const EMPTY_MATCHES = () =>
-  Array.from({ length: 9 }, (_, i) => ({ id: i + 1, a: "", b: "", score: "" }));
+const EMPTY_MATCHES = (n) =>
+  Array.from({ length: n ?? 9 }, (_, i) => ({ id: i + 1, a: "", b: "", score: "" }));
 
 const DEFAULT_STATE = {
   mode: "tournament",
@@ -27,16 +27,6 @@ const DEFAULT_STATE = {
   matches: EMPTY_MATCHES(),
   updatedAt: Date.now(),
   serveRallies: 0,
-  // Tennis mode
-  scoreMode: "tournament", // "tournament" | "tennis"
-  tennisMaxGames: 6,       // геймов до победы в сете
-  tennisPointsA: 0,        // текущие очки в гейме: 0,1,2,3 = 0/15/30/40
-  tennisPointsB: 0,
-  tennisGamesA: 0,         // выигранные геймы
-  tennisGamesB: 0,
-  tennisDeuce: false,      // идёт deuce
-  tennisAdvA: false,       // advantage у A
-  tennisAdvB: false,       // advantage у B
 };
 
 let state = { ...DEFAULT_STATE };
@@ -59,18 +49,21 @@ function sanitizePlayers(arr) {
   return out.slice(0, 3);
 }
 
-function sanitizeMatches(arr) {
-  const base = Array.isArray(arr) ? arr : EMPTY_MATCHES();
-  const out = base.slice(0, 9).map((m, i) => ({
-    id: i + 1,
-    a: String(m?.a ?? "").trim(),
-    b: String(m?.b ?? "").trim(),
-    score: String(m?.score ?? "").trim(),
-  }));
-  while (out.length < 9) {
-    out.push({ id: out.length + 1, a: "", b: "", score: "" });
+function sanitizeMatches(arr, count) {
+  const n = count ?? (Array.isArray(arr) ? arr.length : 9);
+  const safeN = Math.max(1, Math.min(99, Number(n) || 9));
+  const base = Array.isArray(arr) ? arr : EMPTY_MATCHES(safeN);
+  const out = [];
+  for (let i = 0; i < safeN; i++) {
+    const m = base[i];
+    out.push({
+      id: i + 1,
+      a: String(m?.a ?? "").trim(),
+      b: String(m?.b ?? "").trim(),
+      score: String(m?.score ?? "").trim(),
+    });
   }
-  return out.map((m, i) => ({ ...m, id: i + 1 }));
+  return out;
 }
 
 function sanitizeFirstServer(value) {
@@ -96,13 +89,14 @@ function sanitizePatch(patch) {
 
   if (patch.teamAPlayers !== undefined) p.teamAPlayers = sanitizePlayers(patch.teamAPlayers);
   if (patch.teamBPlayers !== undefined) p.teamBPlayers = sanitizePlayers(patch.teamBPlayers);
-  if (patch.matches !== undefined) p.matches = sanitizeMatches(patch.matches);
+  if (patch.matchCount !== undefined) p.matchCount = clampInt(patch.matchCount, 1, 99);
+  if (patch.matches !== undefined) p.matches = sanitizeMatches(patch.matches, patch.matchCount ?? state.matchCount);
 
   const ua = Number(patch.updatedAt);
   if (Number.isFinite(ua) && ua > 0) p.updatedAt = ua;
   if (patch.serveRallies !== undefined) p.serveRallies = clampInt(patch.serveRallies, 0, 9999);
 
-  // Tennis mode fields
+  // Tennis fields
   if (typeof patch.scoreMode === "string") p.scoreMode = patch.scoreMode;
   if (patch.tennisMaxGames !== undefined) p.tennisMaxGames = clampInt(patch.tennisMaxGames, 1, 99);
   if (patch.tennisPointsA !== undefined) p.tennisPointsA = clampInt(patch.tennisPointsA, 0, 3);
@@ -145,7 +139,7 @@ io.on("connection", (socket) => {
 
     state.teamAPlayers = sanitizePlayers(state.teamAPlayers);
     state.teamBPlayers = sanitizePlayers(state.teamBPlayers);
-    state.matches = sanitizeMatches(state.matches);
+    state.matches = sanitizeMatches(state.matches, state.matchCount);
     state.firstServer = sanitizeFirstServer(state.firstServer);
 
     io.emit("state", state);
