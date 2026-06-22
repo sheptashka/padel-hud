@@ -495,7 +495,7 @@ function tennisScorePoint(winner) {
   if (ts.tennisDeuce) {
     if (ts.tennisAdvA || ts.tennisAdvB) {
       if ((winner === "A" && ts.tennisAdvA) || (winner === "B" && ts.tennisAdvB)) {
-        // Would win game — ask confirmation
+        // Would win game — ask confirmation BEFORE any mutation
         const snapshot = snapshotTennis();
         showGameWinModal(winner,
           () => { doWinGame(winner); },
@@ -512,6 +512,9 @@ function tennisScorePoint(winner) {
     updateTennisUI(); emitAll(); return;
   }
 
+  // Take snapshot BEFORE mutating
+  const snapshot = snapshotTennis();
+
   if (winner === "A") ts.tennisPointsA = clamp(ts.tennisPointsA + 1, 0, 4);
   else ts.tennisPointsB = clamp(ts.tennisPointsB + 1, 0, 4);
 
@@ -522,7 +525,6 @@ function tennisScorePoint(winner) {
 
   if (ts.tennisPointsA >= 4 || ts.tennisPointsB >= 4) {
     const w = ts.tennisPointsA >= 4 ? "A" : "B";
-    const snapshot = snapshotTennis();
     showGameWinModal(w,
       () => { doWinGame(w); },
       () => { window.__tennisState = snapshot; updateTennisUI(); emitAll(); }
