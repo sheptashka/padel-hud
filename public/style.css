@@ -961,3 +961,11 @@ body.match{
 .bonusBtn:hover{
   background: rgba(0, 150, 255, .28);
 }
+
+/* Tennis HUD 5-column layout */
+.hudSportHeader5 {
+  grid-template-columns: 22px minmax(200px, 1fr) 170px 170px 170px !important;
+}
+.hudSportRow5 {
+  grid-template-columns: 22px minmax(200px, 1fr) 170px 170px 170px !important;
+}
