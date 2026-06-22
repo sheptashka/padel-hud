@@ -159,6 +159,14 @@ function fill(s) {
     $("showHud").checked = s.hudVisible ?? true;
   }
 
+  // Tennis mode
+  const scoreMode = s.scoreMode ?? "tournament";
+  if ($("scoreMode")) $("scoreMode").value = scoreMode;
+  if ($("tennisMaxGames")) $("tennisMaxGames").value = s.tennisMaxGames ?? 6;
+
+  updateTennisPanelVisibility(scoreMode);
+  updateTennisUI(s);
+
   updateTeamRowTitles();
 }
 
@@ -238,6 +246,13 @@ function buildPatchFromUI({ touchUpdatedAt } = { touchUpdatedAt: true }) {
 
   const local = loadLocal();
 
+  const scoreMode = ($("scoreMode") ? $("scoreMode").value : null) || "tournament";
+  const tennisState = window.__tennisState || {
+    tennisPointsA: 0, tennisPointsB: 0,
+    tennisGamesA: 0, tennisGamesB: 0,
+    tennisDeuce: false, tennisAdvA: false, tennisAdvB: false,
+  };
+
   return {
     mode: "tournament",
     maxPoints: norm.N,
@@ -253,6 +268,9 @@ function buildPatchFromUI({ touchUpdatedAt } = { touchUpdatedAt: true }) {
     firstServer: getFirstServerFromUI(),
     matches: sanitizeMatches(matches),
     updatedAt: touchUpdatedAt ? now() : Number(local?.updatedAt || 0) || now(),
+    scoreMode,
+    tennisMaxGames: $("tennisMaxGames") ? clamp(Number($("tennisMaxGames").value), 1, 99) : 6,
+    ...tennisState,
   };
 }
 
@@ -332,6 +350,158 @@ function toggleFirstServer(team) {
   emitAll();
 }
 
+// ===================== TENNIS LOGIC =====================
+
+const TENNIS_LABELS = ["0", "15", "30", "40"];
+
+window.__tennisState = {
+  tennisPointsA: 0, tennisPointsB: 0,
+  tennisGamesA: 0, tennisGamesB: 0,
+  tennisDeuce: false, tennisAdvA: false, tennisAdvB: false,
+};
+
+function updateTennisPanelVisibility(mode) {
+  const wrap = $("tennisPanelWrap");
+  if (!wrap) return;
+  wrap.style.display = mode === "tennis" ? "block" : "none";
+}
+
+function tennisPointLabel(ts, team) {
+  if (ts.tennisDeuce) {
+    if (team === "A" && ts.tennisAdvA) return "Ad";
+    if (team === "B" && ts.tennisAdvB) return "Ad";
+    return "40";
+  }
+  const pts = team === "A" ? ts.tennisPointsA : ts.tennisPointsB;
+  return TENNIS_LABELS[pts] ?? "0";
+}
+
+function updateTennisUI() {
+  const ts = window.__tennisState;
+  const elA = $("tennisPointA");
+  const elB = $("tennisPointB");
+  const elGA = $("tennisGamesA");
+  const elGB = $("tennisGamesB");
+  const elDeuce = $("tennisDeuceLabel");
+  const elLabelA = $("tennisTeamLabelA");
+  const elLabelB = $("tennisTeamLabelB");
+
+  if (elA) elA.textContent = tennisPointLabel(ts, "A");
+  if (elB) elB.textContent = tennisPointLabel(ts, "B");
+  if (elGA) elGA.textContent = ts.tennisGamesA;
+  if (elGB) elGB.textContent = ts.tennisGamesB;
+
+  if (elDeuce) {
+    elDeuce.textContent = (ts.tennisDeuce && !ts.tennisAdvA && !ts.tennisAdvB) ? "DEUCE" : "";
+  }
+
+  const teamA = safeStr($("teamA")?.value) || "Команда A";
+  const teamB = safeStr($("teamB")?.value) || "Команда B";
+  if (elLabelA) elLabelA.textContent = teamA;
+  if (elLabelB) elLabelB.textContent = teamB;
+}
+
+function loadTennisState(s) {
+  window.__tennisState = {
+    tennisPointsA: Number(s?.tennisPointsA ?? 0),
+    tennisPointsB: Number(s?.tennisPointsB ?? 0),
+    tennisGamesA: Number(s?.tennisGamesA ?? 0),
+    tennisGamesB: Number(s?.tennisGamesB ?? 0),
+    tennisDeuce: !!s?.tennisDeuce,
+    tennisAdvA: !!s?.tennisAdvA,
+    tennisAdvB: !!s?.tennisAdvB,
+  };
+}
+
+function tennisWinGame(winner) {
+  const ts = window.__tennisState;
+  if (winner === "A") ts.tennisGamesA += 1;
+  else ts.tennisGamesB += 1;
+  ts.tennisPointsA = 0;
+  ts.tennisPointsB = 0;
+  ts.tennisDeuce = false;
+  ts.tennisAdvA = false;
+  ts.tennisAdvB = false;
+  updateTennisUI();
+  emitAll();
+}
+
+function tennisScorePoint(winner) {
+  const ts = window.__tennisState;
+
+  if (ts.tennisDeuce) {
+    if (ts.tennisAdvA || ts.tennisAdvB) {
+      if ((winner === "A" && ts.tennisAdvA) || (winner === "B" && ts.tennisAdvB)) {
+        tennisWinGame(winner);
+        return;
+      } else {
+        ts.tennisAdvA = false;
+        ts.tennisAdvB = false;
+      }
+    } else {
+      if (winner === "A") ts.tennisAdvA = true;
+      else ts.tennisAdvB = true;
+    }
+    updateTennisUI();
+    emitAll();
+    return;
+  }
+
+  if (winner === "A") ts.tennisPointsA = clamp(ts.tennisPointsA + 1, 0, 4);
+  else ts.tennisPointsB = clamp(ts.tennisPointsB + 1, 0, 4);
+
+  if (ts.tennisPointsA === 3 && ts.tennisPointsB === 3) {
+    ts.tennisDeuce = true;
+    ts.tennisAdvA = false;
+    ts.tennisAdvB = false;
+    updateTennisUI();
+    emitAll();
+    return;
+  }
+
+  if (ts.tennisPointsA >= 4) { tennisWinGame("A"); return; }
+  if (ts.tennisPointsB >= 4) { tennisWinGame("B"); return; }
+
+  updateTennisUI();
+  emitAll();
+}
+
+function tennisRemovePoint(team) {
+  const ts = window.__tennisState;
+
+  if (ts.tennisDeuce) {
+    if (ts.tennisAdvA || ts.tennisAdvB) {
+      ts.tennisAdvA = false;
+      ts.tennisAdvB = false;
+    } else {
+      ts.tennisDeuce = false;
+      if (team === "A") ts.tennisPointsA = 2;
+      else ts.tennisPointsB = 2;
+    }
+    updateTennisUI();
+    emitAll();
+    return;
+  }
+
+  if (team === "A") ts.tennisPointsA = clamp(ts.tennisPointsA - 1, 0, 3);
+  else ts.tennisPointsB = clamp(ts.tennisPointsB - 1, 0, 3);
+
+  updateTennisUI();
+  emitAll();
+}
+
+function tennisResetAll() {
+  window.__tennisState = {
+    tennisPointsA: 0, tennisPointsB: 0,
+    tennisGamesA: 0, tennisGamesB: 0,
+    tennisDeuce: false, tennisAdvA: false, tennisAdvB: false,
+  };
+  updateTennisUI();
+  emitAll();
+}
+
+// ===================== END TENNIS =====================
+
 const bootLocalMatches = loadMatchesLocal();
 if (bootLocalMatches) {
   window.__matches = sanitizeMatches(bootLocalMatches);
@@ -366,6 +536,8 @@ socket.on("state", (s) => {
   }
 
   fill(state);
+  loadTennisState(state);
+  updateTennisUI();
 
   const serverMatches = Array.isArray(state.matches) ? state.matches : null;
   const useMatches =
@@ -468,6 +640,38 @@ if (clearBtn) {
     emitAll();
   });
 }
+
+// ===================== TENNIS EVENT HANDLERS =====================
+
+if ($("scoreMode")) {
+  $("scoreMode").addEventListener("change", () => {
+    const mode = $("scoreMode").value;
+    updateTennisPanelVisibility(mode);
+    emitAll();
+  });
+}
+
+if ($("tennisMaxGames")) {
+  $("tennisMaxGames").addEventListener("change", emitAll);
+}
+
+if ($("tennisAPlus")) {
+  $("tennisAPlus").addEventListener("click", () => tennisScorePoint("A"));
+}
+if ($("tennisAMinus")) {
+  $("tennisAMinus").addEventListener("click", () => tennisRemovePoint("A"));
+}
+if ($("tennisBPlus")) {
+  $("tennisBPlus").addEventListener("click", () => tennisScorePoint("B"));
+}
+if ($("tennisBMinus")) {
+  $("tennisBMinus").addEventListener("click", () => tennisRemovePoint("B"));
+}
+if ($("tennisReset")) {
+  $("tennisReset").addEventListener("click", tennisResetAll);
+}
+
+// ===================== END TENNIS HANDLERS =====================
 
 // временный фикс: если админка открыта, раз в 5 сек поднимаем актуальный state на сервер
 setInterval(() => {
