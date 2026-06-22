@@ -961,105 +961,15 @@ body.match{
 .bonusBtn:hover{
   background: rgba(0, 150, 255, .28);
 }
-/* ===================== TENNIS PANEL (admin) ===================== */
-.tennisScorePanel {
-  display: grid;
-  grid-template-columns: 1fr 60px 1fr;
-  gap: 10px;
-  align-items: center;
-  padding: 12px;
-  border-radius: 14px;
-  background: rgba(0,0,0,.18);
-  border: 1px solid rgba(255,255,255,.08);
+/* Tennis ball serve dot on HUD */
+.serveDot {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 35% 35%, #fff 0%, #c8e6c9 40%, #81c784 100%);
+  box-shadow: 0 0 10px rgba(200,255,200,.9), 0 0 4px rgba(255,255,255,.7);
+  opacity: 0;
+  transition: opacity .15s ease;
+  justify-self: center;
 }
-.tennisTeamCol {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-}
-.tennisTeamName {
-  font-weight: 800;
-  font-size: 14px;
-  opacity: .9;
-  text-align: center;
-}
-.tennisPointDisplay {
-  font-size: 42px;
-  font-weight: 950;
-  color: #fff;
-  letter-spacing: .5px;
-  min-width: 80px;
-  text-align: center;
-  line-height: 1;
-}
-.tennisGamesDisplay {
-  font-size: 12px;
-  opacity: .75;
-}
-.tennisVs {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  font-weight: 900;
-  opacity: .55;
-}
-
-/* ===================== HUD TENNIS ===================== */
-.hudTennisPoint {
-  width: 110px;
-  height: 58px;
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-size: 30px;
-  font-weight: 950;
-  background: linear-gradient(180deg, rgba(0,150,255,.95), rgba(0,70,190,.95));
-  border: 2px solid rgba(80,230,255,.95);
-  box-shadow: inset 0 0 14px rgba(255,255,255,.18), 0 0 14px rgba(0,210,255,.65);
-  letter-spacing: .3px;
-}
-.hudTennisGames {
-  width: 90px;
-  height: 58px;
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: rgba(255,255,255,.78);
-  font-size: 30px;
-  font-weight: 950;
-  background: rgba(0,0,0,.12);
-  border-left: 1px solid rgba(120,220,255,.45);
-}
-.hudTennisDeuce {
-  text-align: center;
-  font-size: 16px;
-  font-weight: 900;
-  color: #ffd60a;
-  text-shadow: 0 0 10px rgba(255,210,0,.55);
-  letter-spacing: .8px;
-  padding: 4px 0 2px;
-}
-
-/* Fix HUD row columns for tennis (same grid as tournament) */
-.hudSportRow {
-  display: grid;
-  grid-template-columns: 22px minmax(180px, 1fr) 110px 90px;
-  gap: 12px;
-  align-items: center;
-  padding: 12px 14px;
-  border-radius: 18px;
-  background: rgba(0,20,80,.72);
-  border: 1px solid rgba(0,205,255,.45);
-  box-shadow: inset 0 0 18px rgba(0,170,255,.24);
-}
-.hudSportHeader {
-  display: grid;
-  grid-template-columns: 22px minmax(180px, 1fr) 110px 90px;
-  gap: 12px;
-  padding: 0 10px 2px;
-}
+.serveDot.show { opacity: 1; }
