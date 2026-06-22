@@ -6,141 +6,55 @@
   <title>Padel HUD — Админка</title>
   <link rel="stylesheet" href="/style.css" />
   <style>
-    .serveStart {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      white-space: nowrap;
-      font-size: 12px;
-      opacity: .92;
-      user-select: none;
-    }
-    .serveStart input {
-      width: 16px;
-      height: 16px;
-      margin: 0;
-      accent-color: #ffffff;
-      cursor: pointer;
-    }
-    .serveStartWrap {
-      display: flex;
-      justify-content: flex-end;
-      margin-top: 6px;
-    }
-    .tennisServeBtn {
-      flex: 1;
-      padding: 10px 12px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,.15);
-      background: rgba(255,255,255,.06);
-      color: #f3f3f3;
-      font-weight: 700;
-      font-size: 13px;
-      cursor: pointer;
-      transition: background .15s, border-color .15s;
-    }
-    .tennisServeBtn:hover {
-      background: rgba(255,255,255,.12);
-    }
-    .tennisServeBtn.active {
-      background: rgba(0,150,255,.28);
-      border-color: rgba(0,210,255,.7);
-      color: #80d8ff;
-    }
-    .tennisServeNone.active {
-      background: rgba(255,255,255,.08);
-      border-color: rgba(255,255,255,.3);
-      color: #ccc;
-    }
-    /* Modal */
-    .modalOverlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,.65);
-      z-index: 1000;
-      align-items: center;
-      justify-content: center;
-    }
-    .modalOverlay.show { display: flex; }
-    .modalBox {
-      background: #1a1d24;
-      border: 1px solid rgba(255,255,255,.15);
-      border-radius: 18px;
-      padding: 28px 24px 20px;
-      max-width: 380px;
-      width: 90%;
-      box-shadow: 0 20px 50px rgba(0,0,0,.6);
-      text-align: center;
-    }
-    .modalTitle {
-      font-size: 18px;
-      font-weight: 800;
-      margin-bottom: 8px;
-    }
-    .modalSub {
-      font-size: 14px;
-      opacity: .75;
-      margin-bottom: 20px;
-    }
-    .modalBtns {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-    }
-    .modalBtns button {
-      min-width: 110px;
-      padding: 10px 18px;
-      border-radius: 12px;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    .modalBtnYes {
-      background: rgba(0,180,100,.25);
-      border-color: rgba(0,220,120,.5);
-      color: #6effb4;
-    }
-    .modalBtnNo {
-      background: rgba(255,60,60,.18);
-      border-color: rgba(255,90,90,.5);
-      color: #ff8080;
-    }
-    .modalBtnSave {
-      background: rgba(0,150,255,.25);
-      border-color: rgba(0,200,255,.5);
-      color: #80d8ff;
-    }
-    /* Match count controls */
-    .matchCountRow {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-    .matchCountRow label {
-      margin: 0;
-      white-space: nowrap;
-    }
-    .matchCountRow input {
-      width: 70px;
-    }
-    .matchCountRow .btn {
-      width: 38px;
-      height: 36px;
-      font-size: 18px;
-      border-radius: 10px;
-    }
+    .serveStart { display:inline-flex;align-items:center;gap:8px;white-space:nowrap;font-size:12px;opacity:.92;user-select:none; }
+    .serveStart input { width:16px;height:16px;margin:0;accent-color:#fff;cursor:pointer; }
+    .serveStartWrap { display:flex;justify-content:flex-end;margin-top:6px; }
+
+    /* Player count */
+    .playerCountRow { display:flex;align-items:center;gap:8px;margin-bottom:10px; }
+    .playerCountRow label { margin:0;white-space:nowrap;font-size:12px;opacity:.82; }
+    .playerCountRow input { width:60px; }
+    .playerCountRow .btn { width:34px;height:32px;font-size:16px;border-radius:9px;padding:0; }
+
+    /* Modals */
+    .modalOverlay { display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1000;align-items:center;justify-content:center; }
+    .modalOverlay.show { display:flex; }
+    .modalBox { background:#1a1d24;border:1px solid rgba(255,255,255,.15);border-radius:18px;padding:28px 24px 20px;max-width:380px;width:90%;box-shadow:0 20px 50px rgba(0,0,0,.6);text-align:center; }
+    .modalTitle { font-size:18px;font-weight:800;margin-bottom:8px; }
+    .modalSub { font-size:14px;opacity:.75;margin-bottom:20px; }
+    .modalBtns { display:flex;gap:10px;justify-content:center; }
+    .modalBtns button { min-width:110px;padding:10px 18px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer; }
+    .modalBtnYes { background:rgba(0,180,100,.25);border-color:rgba(0,220,120,.5);color:#6effb4; }
+    .modalBtnNo { background:rgba(255,60,60,.18);border-color:rgba(255,90,90,.5);color:#ff8080; }
+    .modalBtnSave { background:rgba(0,150,255,.25);border-color:rgba(0,200,255,.5);color:#80d8ff; }
+
+    /* Match count */
+    .matchCountRow { display:flex;align-items:center;gap:10px;margin-bottom:10px; }
+    .matchCountRow label { margin:0;white-space:nowrap; }
+    .matchCountRow input { width:70px; }
+
+    /* Tennis serve buttons */
+    .tennisServeBtn { flex:1;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:#f3f3f3;font-weight:700;font-size:13px;cursor:pointer;transition:background .15s,border-color .15s; }
+    .tennisServeBtn:hover { background:rgba(255,255,255,.12); }
+    .tennisServeBtn.active { background:rgba(0,150,255,.28);border-color:rgba(0,210,255,.7);color:#80d8ff; }
+    .tennisServeNone.active { background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.3);color:#ccc; }
+
+    /* Serve dot in tennis panel */
+    .tennisServeDot { width:12px;height:12px;border-radius:50%;background:#fff;box-shadow:0 0 8px rgba(255,255,255,.9);opacity:0;transition:opacity .15s;display:inline-block;margin-right:6px;vertical-align:middle;flex-shrink:0; }
+    .tennisServeDot.show { opacity:1; }
+
+    /* Judge link */
+    .judgeLink { display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;background:rgba(0,150,255,.18);border:1px solid rgba(0,200,255,.45);color:#80d8ff;font-weight:700;font-size:13px;text-decoration:none;margin-top:10px; }
+    .judgeLink:hover { background:rgba(0,150,255,.28); }
   </style>
 </head>
-
 <body class="admin">
 
 <!-- Modal: confirm game win -->
 <div class="modalOverlay" id="modalGameWin">
   <div class="modalBox">
     <div class="modalTitle" id="modalGameWinTitle">Победа в гейме?</div>
-    <div class="modalSub" id="modalGameWinSub">Команда выиграла гейм</div>
+    <div class="modalSub" id="modalGameWinSub"></div>
     <div class="modalBtns">
       <button class="modalBtnYes" id="modalGameWinYes">Да</button>
       <button class="modalBtnNo" id="modalGameWinNo">Нет</button>
@@ -214,54 +128,61 @@
       </div>
     </div>
 
+    <!-- ROSTERS -->
     <div class="card" style="margin-top:14px;">
-      <h2 style="margin:0 0 10px; font-size:16px;">Составы команд</h2>
+      <h2 style="margin:0 0 10px;font-size:16px;">Составы команд</h2>
       <div class="grid2">
-        <div><label>Команда A — игрок 1</label><input id="aP1" placeholder="Напр. Дред" /></div>
-        <div><label>Команда B — игрок 1</label><input id="bP1" placeholder="Напр. Флешка" /></div>
-        <div><label>Команда A — игрок 2</label><input id="aP2" placeholder="Напр. Кармик" /></div>
-        <div><label>Команда B — игрок 2</label><input id="bP2" placeholder="Напр. Шепташка" /></div>
-        <div><label>Команда A — игрок 3</label><input id="aP3" placeholder="Напр. Саня" /></div>
-        <div><label>Команда B — игрок 3</label><input id="bP3" placeholder="Напр. Жека" /></div>
+        <div>
+          <div class="playerCountRow">
+            <label>Игроков в команде A:</label>
+            <input id="playerCountA" type="number" min="1" max="10" step="1" value="3" />
+            <button class="btn compact playerCountRow" id="playerCountAMinus" style="width:34px;height:32px;font-size:16px;border-radius:9px;padding:0;">−</button>
+            <button class="btn compact playerCountRow" id="playerCountAPlus" style="width:34px;height:32px;font-size:16px;border-radius:9px;padding:0;">+</button>
+          </div>
+          <div id="rosterInputsA"></div>
+        </div>
+        <div>
+          <div class="playerCountRow">
+            <label>Игроков в команде B:</label>
+            <input id="playerCountB" type="number" min="1" max="10" step="1" value="3" />
+            <button class="btn compact playerCountRow" id="playerCountBMinus" style="width:34px;height:32px;font-size:16px;border-radius:9px;padding:0;">−</button>
+            <button class="btn compact playerCountRow" id="playerCountBPlus" style="width:34px;height:32px;font-size:16px;border-radius:9px;padding:0;">+</button>
+          </div>
+          <div id="rosterInputsB"></div>
+        </div>
       </div>
     </div>
 
-    <!-- TOURNAMENT score block -->
+    <!-- TOURNAMENT block -->
     <div id="tournamentBlock">
       <div class="teamsPanel compact">
         <div>
           <div class="teamRow compact">
             <div class="teamRowTitle" id="teamRowA">Команда A</div>
-            <button class="btn compact" id="aMinus" aria-label="A minus">−</button>
+            <button class="btn compact" id="aMinus">−</button>
             <div class="scorePill compact">
               <div class="scorePillLabel">Очки A</div>
               <input class="scorePillInput compact" id="a3" type="number" min="0" step="1" />
             </div>
-            <button class="btn compact" id="aPlus" aria-label="A plus">+</button>
+            <button class="btn compact" id="aPlus">+</button>
           </div>
           <div class="serveStartWrap">
-            <label class="serveStart">
-              <input type="checkbox" id="firstServerA" />
-              Команда начинает подавать
-            </label>
+            <label class="serveStart"><input type="checkbox" id="firstServerA" />Команда начинает подавать</label>
           </div>
           <button class="bonusBtn" id="aBonus" type="button">+2 бонусный мяч</button>
         </div>
         <div>
           <div class="teamRow compact">
             <div class="teamRowTitle" id="teamRowB">Команда B</div>
-            <button class="btn compact" id="bMinus" aria-label="B minus">−</button>
+            <button class="btn compact" id="bMinus">−</button>
             <div class="scorePill compact">
               <div class="scorePillLabel">Очки B</div>
               <input class="scorePillInput compact" id="b3" type="number" min="0" step="1" />
             </div>
-            <button class="btn compact" id="bPlus" aria-label="B plus">+</button>
+            <button class="btn compact" id="bPlus">+</button>
           </div>
           <div class="serveStartWrap">
-            <label class="serveStart">
-              <input type="checkbox" id="firstServerB" />
-              Команда начинает подавать
-            </label>
+            <label class="serveStart"><input type="checkbox" id="firstServerB" />Команда начинает подавать</label>
           </div>
           <button class="bonusBtn" id="bBonus" type="button">+2 бонусный мяч</button>
         </div>
@@ -272,10 +193,14 @@
       </div>
     </div>
 
-    <!-- TENNIS score block -->
-    <div id="tennisBlock" style="display:none; margin-top:14px;">
+    <!-- TENNIS block -->
+    <div id="tennisBlock" style="display:none;margin-top:14px;">
       <div class="card">
-        <h2 style="margin:0 0 10px; font-size:16px;">Теннисный режим</h2>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <h2 style="margin:0;font-size:16px;">Теннисный режим</h2>
+          <a href="/tennis.html" target="_blank" class="judgeLink">🎾 Судейский экран</a>
+        </div>
+
         <div class="grid2">
           <div>
             <label>Геймов до победы</label>
@@ -286,19 +211,27 @@
           </div>
         </div>
 
+        <!-- Serve selector -->
         <div style="margin-top:12px;">
           <label>Кто подаёт первым</label>
           <div style="display:flex;gap:10px;margin-top:6px;">
-            <button class="tennisServeBtn" id="tennisServeA">🎾 <span id="tennisServeLabelA">Команда A</span></button>
-            <button class="tennisServeBtn" id="tennisServeB">🎾 <span id="tennisServeLabelB">Команда B</span></button>
+            <button class="tennisServeBtn" id="tennisServeA">
+              <span class="tennisServeDot" id="adminServeDotA"></span><span id="tennisServeLabelA">Команда A</span>
+            </button>
+            <button class="tennisServeBtn" id="tennisServeB">
+              <span class="tennisServeDot" id="adminServeDotB"></span><span id="tennisServeLabelB">Команда B</span>
+            </button>
             <button class="tennisServeBtn tennisServeNone" id="tennisServeNone">Не выбрано</button>
           </div>
         </div>
 
+        <!-- Tennis scoreboard -->
         <div class="tennisScorePanel" style="margin-top:14px;">
-          <!-- Team A -->
           <div class="tennisTeamCol">
-            <div class="tennisTeamName" id="tennisTeamLabelA">Команда A</div>
+            <div style="display:flex;align-items:center;justify-content:center;gap:6px;">
+              <span class="tennisServeDot" id="scoreDotA"></span>
+              <div class="tennisTeamName" id="tennisTeamLabelA">Команда A</div>
+            </div>
             <div class="tennisPointDisplay" id="tennisPointA">0</div>
             <div class="tennisGamesDisplay">Геймы: <span id="tennisGamesA">0</span></div>
             <div style="display:flex;gap:8px;margin-top:8px;justify-content:center;">
@@ -311,9 +244,11 @@
             <div id="tennisDeuceLabel" style="font-size:13px;font-weight:900;opacity:.85;text-align:center;min-height:20px;"></div>
           </div>
 
-          <!-- Team B -->
           <div class="tennisTeamCol">
-            <div class="tennisTeamName" id="tennisTeamLabelB">Команда B</div>
+            <div style="display:flex;align-items:center;justify-content:center;gap:6px;">
+              <span class="tennisServeDot" id="scoreDotB"></span>
+              <div class="tennisTeamName" id="tennisTeamLabelB">Команда B</div>
+            </div>
             <div class="tennisPointDisplay" id="tennisPointB">0</div>
             <div class="tennisGamesDisplay">Геймы: <span id="tennisGamesB">0</span></div>
             <div style="display:flex;gap:8px;margin-top:8px;justify-content:center;">
@@ -331,7 +266,7 @@
 
     <!-- MATCHES -->
     <div class="card" style="margin-top:14px;">
-      <h2 style="margin:0 0 10px; font-size:16px;">Матчи турнира</h2>
+      <h2 style="margin:0 0 10px;font-size:16px;">Матчи турнира</h2>
       <div class="hint" style="margin-bottom:10px;">Вводи счёт вида <b>6:3</b>. Победа считается автоматически по счёту.</div>
 
       <div class="matchCountRow">
@@ -356,11 +291,11 @@
       </div>
 
       <div class="matchesActions">
-        <button type="button" id="saveMatches" class="iconBtn" title="Сохранить" aria-label="Сохранить">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.0 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"></path></svg>
+        <button type="button" id="saveMatches" class="iconBtn" title="Сохранить">
+          <svg viewBox="0 0 24 24"><path d="M9.0 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"></path></svg>
         </button>
-        <button type="button" id="clearMatches" class="iconBtn danger" title="Очистить результаты" aria-label="Очистить">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7h12l-1 14H7L6 7zm3-3h6l1 2H8l1-2z"></path></svg>
+        <button type="button" id="clearMatches" class="iconBtn danger" title="Очистить">
+          <svg viewBox="0 0 24 24"><path d="M6 7h12l-1 14H7L6 7zm3-3h6l1 2H8l1-2z"></path></svg>
         </button>
         <span id="matchesSavedHint" class="savedHint"></span>
       </div>
@@ -369,18 +304,10 @@
     <div class="previewWrap">
       <div class="previewHead">
         <div class="previewTitle">Превью</div>
-        <label class="toggle">
-          <input id="showPreview" type="checkbox" />
-          Показать превью
-        </label>
-        <label class="toggle">
-          <input type="checkbox" id="showHud" checked />
-          <span>Показать HUD</span>
-        </label>
+        <label class="toggle"><input id="showPreview" type="checkbox" />Показать превью</label>
+        <label class="toggle"><input type="checkbox" id="showHud" checked /><span>Показать HUD</span></label>
       </div>
-      <div class="previewBox" id="previewBox">
-        <iframe src="/hud.html"></iframe>
-      </div>
+      <div class="previewBox" id="previewBox"><iframe src="/hud.html"></iframe></div>
     </div>
   </div>
 </div>
