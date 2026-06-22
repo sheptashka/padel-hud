@@ -27,6 +27,31 @@
       justify-content: flex-end;
       margin-top: 6px;
     }
+    .tennisServeBtn {
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.15);
+      background: rgba(255,255,255,.06);
+      color: #f3f3f3;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background .15s, border-color .15s;
+    }
+    .tennisServeBtn:hover {
+      background: rgba(255,255,255,.12);
+    }
+    .tennisServeBtn.active {
+      background: rgba(0,150,255,.28);
+      border-color: rgba(0,210,255,.7);
+      color: #80d8ff;
+    }
+    .tennisServeNone.active {
+      background: rgba(255,255,255,.08);
+      border-color: rgba(255,255,255,.3);
+      color: #ccc;
+    }
     /* Modal */
     .modalOverlay {
       display: none;
@@ -258,6 +283,15 @@
           </div>
           <div style="display:flex;flex-direction:column;justify-content:flex-end;">
             <div class="hint">При достижении суммы геймов появится окно победителя</div>
+          </div>
+        </div>
+
+        <div style="margin-top:12px;">
+          <label>Кто подаёт первым</label>
+          <div style="display:flex;gap:10px;margin-top:6px;">
+            <button class="tennisServeBtn" id="tennisServeA">🎾 <span id="tennisServeLabelA">Команда A</span></button>
+            <button class="tennisServeBtn" id="tennisServeB">🎾 <span id="tennisServeLabelB">Команда B</span></button>
+            <button class="tennisServeBtn tennisServeNone" id="tennisServeNone">Не выбрано</button>
           </div>
         </div>
 
