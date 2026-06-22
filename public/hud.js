@@ -129,12 +129,12 @@ function applyTennisState(s) {
   if (elGB) elGB.textContent = String(s.tennisGamesB ?? 0);
   if (elDeuce) elDeuce.style.display = (!!s.tennisDeuce && !s.tennisAdvA && !s.tennisAdvB) ? "block" : "none";
 
-  // Serve dot: alternates every 2 games from tennisFirstServer
+  // Serve dot: switches every game from tennisFirstServer
   const srv = s.tennisFirstServer === "A" || s.tennisFirstServer === "B" ? s.tennisFirstServer : "";
   if (srv) {
     const totalGames = Number(s.tennisGamesA ?? 0) + Number(s.tennisGamesB ?? 0);
-    const block = Math.floor(totalGames / 2);
-    const currentServer = (srv === "A") ? (block % 2 === 0 ? "A" : "B") : (block % 2 === 0 ? "B" : "A");
+    // switch every game
+    const currentServer = (totalGames % 2 === 0) ? srv : (srv === "A" ? "B" : "A");
     if (elSA) elSA.classList.toggle("show", currentServer === "A");
     if (elSB) elSB.classList.toggle("show", currentServer === "B");
   } else {
