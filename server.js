@@ -43,10 +43,8 @@ function clampInt(n, min, max) {
 }
 
 function sanitizePlayers(arr) {
-  const base = Array.isArray(arr) ? arr : ["", "", ""];
-  const out = [base[0], base[1], base[2]].map((v) => String(v ?? "").trim());
-  while (out.length < 3) out.push("");
-  return out.slice(0, 3);
+  if (!Array.isArray(arr)) return ["", "", ""];
+  return arr.map((v) => String(v ?? "").trim());
 }
 
 function sanitizeMatches(arr, count) {
@@ -89,6 +87,8 @@ function sanitizePatch(patch) {
 
   if (patch.teamAPlayers !== undefined) p.teamAPlayers = sanitizePlayers(patch.teamAPlayers);
   if (patch.teamBPlayers !== undefined) p.teamBPlayers = sanitizePlayers(patch.teamBPlayers);
+  if (patch.teamAPlayerCount !== undefined) p.teamAPlayerCount = clampInt(patch.teamAPlayerCount, 1, 10);
+  if (patch.teamBPlayerCount !== undefined) p.teamBPlayerCount = clampInt(patch.teamBPlayerCount, 1, 10);
   if (patch.matchCount !== undefined) p.matchCount = clampInt(patch.matchCount, 1, 99);
   if (patch.matches !== undefined) p.matches = sanitizeMatches(patch.matches, patch.matchCount ?? state.matchCount);
 
