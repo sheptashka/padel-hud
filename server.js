@@ -106,6 +106,7 @@ function sanitizePatch(patch) {
   if (patch.tennisDeuce !== undefined) p.tennisDeuce = !!patch.tennisDeuce;
   if (patch.tennisAdvA !== undefined) p.tennisAdvA = !!patch.tennisAdvA;
   if (patch.tennisAdvB !== undefined) p.tennisAdvB = !!patch.tennisAdvB;
+  if (patch.tennisFirstServer !== undefined) p.tennisFirstServer = (patch.tennisFirstServer === "A" || patch.tennisFirstServer === "B") ? patch.tennisFirstServer : "";
 
   return p;
 }
