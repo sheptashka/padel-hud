@@ -152,6 +152,27 @@ function applyState(s) {
   hud.style.display = (s.hudVisible ?? true) ? "flex" : "none";
   if (!(s.hudVisible ?? true)) return;
 
+  const scoreMode = s.scoreMode ?? "tournament";
+
+  const tournamentEl = document.getElementById("hudTournament");
+  const tennisEl = document.getElementById("hudTennis");
+
+  if (scoreMode === "tennis") {
+    if (tournamentEl) tournamentEl.style.display = "none";
+    if (tennisEl) tennisEl.style.display = "block";
+    applyTennisState(s);
+  } else {
+    if (tournamentEl) tournamentEl.style.display = "block";
+    if (tennisEl) tennisEl.style.display = "none";
+    applyTournamentState(s);
+  }
+
+  setPos(s.hudPosition);
+  setBg(s.hudBg);
+  updateServeIndicator(s);
+}
+
+function applyTournamentState(s) {
   const totals = calculateTotalScore(s);
 
   $("teamA").textContent = s.teamA ?? "TEAM A";
@@ -163,10 +184,45 @@ function applyState(s) {
   $("totalA").textContent = String(totals.totalA);
   $("totalB").textContent = String(totals.totalB);
 
-  setPos(s.hudPosition);
-  setBg(s.hudBg);
   updateMetaTournament(s);
-  updateServeIndicator(s);
+}
+
+const TENNIS_LABELS_HUD = ["0", "15", "30", "40"];
+
+function tennisHudPointLabel(s, team) {
+  const deuce = !!s.tennisDeuce;
+  const advA = !!s.tennisAdvA;
+  const advB = !!s.tennisAdvB;
+
+  if (deuce) {
+    if (team === "A" && advA) return "Ad";
+    if (team === "B" && advB) return "Ad";
+    return "40";
+  }
+  const pts = team === "A" ? Number(s.tennisPointsA ?? 0) : Number(s.tennisPointsB ?? 0);
+  return TENNIS_LABELS_HUD[pts] ?? "0";
+}
+
+function applyTennisState(s) {
+  const elTA = $("tennisTeamA");
+  const elTB = $("tennisTeamB");
+  const elPA = $("tennisHudPointA");
+  const elPB = $("tennisHudPointB");
+  const elGA = $("tennisHudGamesA");
+  const elGB = $("tennisHudGamesB");
+  const elDeuce = $("hudTennisDeuce");
+
+  if (elTA) elTA.textContent = s.teamA ?? "TEAM A";
+  if (elTB) elTB.textContent = s.teamB ?? "TEAM B";
+  if (elPA) elPA.textContent = tennisHudPointLabel(s, "A");
+  if (elPB) elPB.textContent = tennisHudPointLabel(s, "B");
+  if (elGA) elGA.textContent = String(s.tennisGamesA ?? 0);
+  if (elGB) elGB.textContent = String(s.tennisGamesB ?? 0);
+
+  if (elDeuce) {
+    const showDeuce = !!s.tennisDeuce && !s.tennisAdvA && !s.tennisAdvB;
+    elDeuce.style.display = showDeuce ? "block" : "none";
+  }
 }
 
 socket.on("connect", () => {
