@@ -119,6 +119,7 @@ function applyTennisState(s) {
   const elPA = $("tennisHudPointA"); const elPB = $("tennisHudPointB");
   const elGA = $("tennisHudGamesA"); const elGB = $("tennisHudGamesB");
   const elDeuce = $("hudTennisDeuce");
+  const elSA = $("serveAT"); const elSB = $("serveBT");
 
   if (elTA) elTA.textContent = s.teamA ?? "TEAM A";
   if (elTB) elTB.textContent = s.teamB ?? "TEAM B";
@@ -127,6 +128,19 @@ function applyTennisState(s) {
   if (elGA) elGA.textContent = String(s.tennisGamesA ?? 0);
   if (elGB) elGB.textContent = String(s.tennisGamesB ?? 0);
   if (elDeuce) elDeuce.style.display = (!!s.tennisDeuce && !s.tennisAdvA && !s.tennisAdvB) ? "block" : "none";
+
+  // Serve dot: alternates every 2 games from tennisFirstServer
+  const srv = s.tennisFirstServer === "A" || s.tennisFirstServer === "B" ? s.tennisFirstServer : "";
+  if (srv) {
+    const totalGames = Number(s.tennisGamesA ?? 0) + Number(s.tennisGamesB ?? 0);
+    const block = Math.floor(totalGames / 2);
+    const currentServer = (srv === "A") ? (block % 2 === 0 ? "A" : "B") : (block % 2 === 0 ? "B" : "A");
+    if (elSA) elSA.classList.toggle("show", currentServer === "A");
+    if (elSB) elSB.classList.toggle("show", currentServer === "B");
+  } else {
+    if (elSA) elSA.classList.remove("show");
+    if (elSB) elSB.classList.remove("show");
+  }
 }
 
 function applyTournamentState(s) {
