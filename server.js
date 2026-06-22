@@ -27,6 +27,16 @@ const DEFAULT_STATE = {
   matches: EMPTY_MATCHES(),
   updatedAt: Date.now(),
   serveRallies: 0,
+  // Tennis mode
+  scoreMode: "tournament", // "tournament" | "tennis"
+  tennisMaxGames: 6,       // геймов до победы в сете
+  tennisPointsA: 0,        // текущие очки в гейме: 0,1,2,3 = 0/15/30/40
+  tennisPointsB: 0,
+  tennisGamesA: 0,         // выигранные геймы
+  tennisGamesB: 0,
+  tennisDeuce: false,      // идёт deuce
+  tennisAdvA: false,       // advantage у A
+  tennisAdvB: false,       // advantage у B
 };
 
 let state = { ...DEFAULT_STATE };
@@ -91,6 +101,17 @@ function sanitizePatch(patch) {
   const ua = Number(patch.updatedAt);
   if (Number.isFinite(ua) && ua > 0) p.updatedAt = ua;
   if (patch.serveRallies !== undefined) p.serveRallies = clampInt(patch.serveRallies, 0, 9999);
+
+  // Tennis mode fields
+  if (typeof patch.scoreMode === "string") p.scoreMode = patch.scoreMode;
+  if (patch.tennisMaxGames !== undefined) p.tennisMaxGames = clampInt(patch.tennisMaxGames, 1, 99);
+  if (patch.tennisPointsA !== undefined) p.tennisPointsA = clampInt(patch.tennisPointsA, 0, 3);
+  if (patch.tennisPointsB !== undefined) p.tennisPointsB = clampInt(patch.tennisPointsB, 0, 3);
+  if (patch.tennisGamesA !== undefined) p.tennisGamesA = clampInt(patch.tennisGamesA, 0, 999);
+  if (patch.tennisGamesB !== undefined) p.tennisGamesB = clampInt(patch.tennisGamesB, 0, 999);
+  if (patch.tennisDeuce !== undefined) p.tennisDeuce = !!patch.tennisDeuce;
+  if (patch.tennisAdvA !== undefined) p.tennisAdvA = !!patch.tennisAdvA;
+  if (patch.tennisAdvB !== undefined) p.tennisAdvB = !!patch.tennisAdvB;
 
   return p;
 }
