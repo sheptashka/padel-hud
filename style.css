@@ -1,0 +1,1078 @@
+/* ===================== HUD ===================== */
+body.overlay{
+  margin:0;
+  background: transparent;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+.hud{
+  position: absolute;
+  top: 24px;
+  left: 24px;
+
+  width: max-content;
+  max-width: 95vw;
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  filter: drop-shadow(0 10px 20px rgba(0,0,0,.35));
+  border-radius: 14px;
+
+  --bgPad: 40px;
+  padding: var(--bgPad);
+
+  isolation: isolate;
+
+  /* ✅ HUD scale +35% */
+  transform: scale(1.35);
+  transform-origin: top left;
+}
+
+.hud::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius: 14px;
+  z-index: -1;
+  background: var(--hudBg, transparent);
+}
+
+.hud.bg-transparent{ --hudBg: transparent; }
+.hud.bg-black{ --hudBg: rgba(0,0,0,.55); }
+.hud.bg-white{ --hudBg: rgba(255,255,255,.85); }
+.hud.bg-chroma-green{ --hudBg: #00ff00; }
+.hud.bg-chroma-purple{ --hudBg: #ff00ff; }
+.hud.bg-blue{ --hudBg: #0066ff; }
+.hud.bg-red{ --hudBg: #ff0033; }
+.hud.bg-yellow{ --hudBg: #ffd400; }
+
+.row{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  background: #111315;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 12px;
+
+  padding: 10px 14px;
+
+  /* ✅ строка = ширина HUD-контейнера */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.team{
+  color: rgba(255,255,255,.92);
+  font-weight: 800;
+  letter-spacing: .3px;
+  text-transform: uppercase;
+  font-size: 16px;
+
+  flex: 1 1 auto;
+  min-width: 0;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.score{
+  margin-left: auto;
+
+  display: inline-flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.box{
+  width: 54px;
+  height: 36px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius: 10px;
+
+  background: #1b1f22;
+  border: 1px solid rgba(255,255,255,.16);
+
+  color: rgba(255,255,255,.92);
+  font-weight: 900;
+}
+
+.meta{
+  margin-top: 2px;
+  align-self: flex-start;
+  padding: 6px 10px;
+
+  background: #111315;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 10px;
+
+  color: rgba(255,255,255,.78);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .2px;
+
+  max-width: calc(95vw - (2 * var(--bgPad)));
+}
+
+/* позиции HUD */
+.hud.pos-tl{ top:24px; left:24px; right:auto; bottom:auto; position:absolute; }
+.hud.pos-tr{ top:24px; right:24px; left:auto; bottom:auto; position:absolute; }
+.hud.pos-bl{ bottom:24px; left:24px; top:auto; right:auto; position:absolute; }
+.hud.pos-br{ bottom:24px; right:24px; top:auto; left:auto; position:absolute; }
+
+@media (max-width: 860px){
+  .hud{ --bgPad: 28px; }
+}
+
+/* ===================== ADMIN ===================== */
+body.admin{
+  margin:0;
+  background:#0b0d12;
+  color:#f3f3f3;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+.container{
+  max-width: 1100px;
+  margin: 18px auto;
+  padding: 0 14px 28px;
+}
+
+h1{
+  margin:0 0 12px;
+  font-size: 20px;
+}
+
+.card{
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 10px 25px rgba(0,0,0,.35);
+  overflow: visible;
+}
+
+label{
+  display:block;
+  font-size:12px;
+  opacity:.82;
+  margin-bottom:6px;
+}
+
+.hint{
+  margin-top:6px;
+  font-size:12px;
+  opacity:.65;
+}
+
+input, select{
+  width:100%;
+  padding:10px 12px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.12);
+  background: rgba(0,0,0,.25);
+  color:#f3f3f3;
+  outline:none;
+  box-sizing: border-box;
+}
+
+.grid2{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.span2{ grid-column: 1 / -1; }
+
+.teamsPanel{
+  margin-top: 14px;
+  display:grid;
+  gap: 12px;
+}
+
+.teamRow{
+  display:grid;
+  grid-template-columns: 160px 52px 1fr 52px;
+  gap: 10px;
+  align-items:center;
+
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(0,0,0,.18);
+}
+
+.teamRowTitle{
+  font-weight: 800;
+  opacity: .92;
+}
+
+.btn{
+  width: 52px;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  color: #f3f3f3;
+  cursor: pointer;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.scorePill{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 10px;
+
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.04);
+}
+
+.scorePillLabel{
+  font-size: 12px;
+  opacity: .75;
+  white-space: nowrap;
+}
+
+.scorePillInput{
+  width: 140px;
+  max-width: 45vw;
+}
+
+.rowBtns{
+  margin-top: 14px;
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+button{
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  color:#f3f3f3;
+  cursor:pointer;
+  font-weight:700;
+}
+
+button.primary{ border-color: rgba(255,255,255,.25); }
+button.danger{ border-color: rgba(255, 90, 90, .55); }
+
+.teamsPanel.compact{ gap: 10px; margin-top: 12px; }
+.teamRow.compact{
+  padding: 10px;
+  gap: 8px;
+  grid-template-columns: 1fr 46px 1fr 46px;
+}
+.btn.compact{
+  width: 46px;
+  height: 40px;
+  border-radius: 12px;
+  font-size: 20px;
+}
+.scorePill.compact{
+  padding: 8px 10px;
+  border-radius: 12px;
+}
+.scorePillInput.compact{
+  width: 110px;
+}
+
+.previewWrap{ margin-top: 12px; }
+.previewHead{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.previewTitle{ font-size: 12px; opacity:.82; font-weight: 700; }
+.toggle{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  margin:0;
+  cursor:pointer;
+  opacity:.9;
+  user-select: none;
+}
+.previewBox{ margin-top: 10px; display:none; }
+.previewBox.show{ display:block; }
+.previewBox iframe{
+  width: 100%;
+  max-width: 760px;
+  height: 220px;
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 14px;
+  background: transparent;
+  overflow: hidden;
+}
+
+/* ===== Matches table in admin ===== */
+.matchesTable{
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  font-size: 13px;
+}
+
+.matchesTable th,
+.matchesTable td{
+  padding: 10px 10px;
+  border-bottom: 1px solid rgba(255,255,255,.10);
+  text-align: center;
+}
+
+.matchesTable th{
+  opacity: .75;
+  font-weight: 700;
+}
+
+.matchesWrap{
+  margin-top: 10px;
+  overflow: auto;
+  max-height: 52vh;
+  padding-bottom: 10px;
+  border-radius: 12px;
+}
+
+/* actions under matches */
+.matchesActions{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:10px;
+
+  margin-top:12px;
+  padding-top:12px;
+  border-top:1px solid rgba(255,255,255,.10);
+}
+
+/* icon buttons */
+.iconBtn{
+  width:44px;
+  height:44px;
+  border-radius:14px;
+
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+
+  background: rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.14);
+  cursor:pointer;
+}
+
+.iconBtn:hover{ background: rgba(255,255,255,.10); }
+
+.iconBtn svg{
+  width:22px;
+  height:22px;
+  fill: rgba(255,255,255,.88);
+  display:block;
+}
+
+.iconBtn.danger{
+  border-color: rgba(255,90,90,.55);
+}
+.iconBtn.danger:hover{
+  background: rgba(255,90,90,.14);
+}
+
+.savedHint{
+  margin-left:10px;
+  color: rgba(255,255,255,.75);
+  font-size:12px;
+}
+
+@media (max-width: 860px){
+  .grid2{ grid-template-columns: 1fr; }
+  .span2{ grid-column: auto; }
+  .teamRow{ grid-template-columns: 1fr 52px 1fr 52px; }
+  .teamRowTitle{ grid-column: 1 / -1; }
+  .teamRow.compact{ grid-template-columns: 1fr 46px 1fr 46px; }
+  .teamRow.compact .teamRowTitle{ grid-column: 1 / -1; }
+}
+
+/* ===================== RESULTS (white cards like your screenshot) ===================== */
+body.results{
+  margin:0;
+  background:#ffffff;
+  color:#111;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+.rContainer{
+  max-width: 1100px;
+  margin: 18px auto;
+  padding: 0 14px 28px;
+}
+
+.rTitle{
+  margin: 0 0 6px;
+  font-size: 34px;
+  letter-spacing: .2px;
+}
+
+.rSub{
+  margin: 0 0 14px;
+  font-size: 14px;
+  color: #666;
+}
+
+.rCard{
+  background: #fff;
+  border: 1px solid #e9e9e9;
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 14px 28px rgba(0,0,0,.10);
+  margin-top: 14px;
+}
+
+.rCardTitle{
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 10px;
+}
+
+.rTableWrap{
+  overflow: auto;
+  border-radius: 12px;
+}
+
+.rTable{
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.rTable thead th{
+  background: #fafafa;
+  color: #222;
+  font-weight: 600;
+  text-align: center;
+  padding: 12px 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.rTable tbody td{
+  padding: 12px 10px;
+  text-align: center;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.rMuted{
+  color: #9a9a9a;
+}
+
+.rRosters{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.rRoster{
+  border: 1px solid #eee;
+  border-radius: 14px;
+  padding: 12px;
+  background: #fff;
+}
+
+.rRosterName{
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.rRosterList{
+  margin: 0;
+  padding-left: 18px;
+  color: #222;
+}
+
+@media (max-width: 860px){
+  .rTitle{ font-size: 28px; }
+  .rRosters{ grid-template-columns: 1fr; }
+}
+
+/* ===================== MATCH (transparent sport scoreboard) ===================== */
+/* ===================== MATCH (HUD STYLE / transparent neon scoreboard) ===================== */
+html, body.match{
+  background: transparent !important;
+}
+
+body.match{
+  margin: 0;
+  color: rgba(255,255,255,.94);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+.mWrap{
+  max-width: 1240px;
+  padding: 18px 22px;
+}
+
+/* header */
+.mHeader{
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) auto minmax(260px, 1fr);
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+
+.mTeam{
+  min-height: 72px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+
+  padding: 14px 18px;
+  border-radius: 22px;
+
+  background: linear-gradient(135deg, rgba(0,70,180,.86), rgba(0,18,70,.86));
+  border: 2px solid rgba(0,210,255,.72);
+  box-shadow:
+    inset 0 0 22px rgba(0,180,255,.25),
+    0 0 22px rgba(0,180,255,.35);
+
+  font-size: 28px;
+  font-weight: 950;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mTeamLeft,
+.mTeamRight{
+  justify-content:center;
+  text-align:center;
+}
+
+.mScoreBoard{
+  min-width: 300px;
+  padding: 10px 18px 14px;
+
+  border-radius: 26px;
+  background: linear-gradient(180deg, rgba(0,25,95,.96), rgba(0,10,48,.96));
+  border: 2px solid rgba(0,220,255,.9);
+  box-shadow:
+    inset 0 0 28px rgba(0,180,255,.32),
+    0 0 34px rgba(0,200,255,.55);
+}
+
+.mScoreLabel{
+  text-align:center;
+  margin-bottom: 4px;
+
+  color: rgba(180,240,255,.92);
+  font-size: 11px;
+  font-weight: 950;
+  letter-spacing: 1.8px;
+}
+
+.mScore{
+  display:flex;
+  align-items:baseline;
+  justify-content:center;
+  gap: 12px;
+}
+
+.mScoreNum{
+  font-size: 108px;
+  font-weight: 950;
+  line-height: .92;
+  letter-spacing: .6px;
+  color:#fff;
+  text-shadow:
+    0 0 12px rgba(0,190,255,.45),
+    0 0 24px rgba(0,120,255,.35);
+}
+
+.mScoreSep{
+  font-size: 56px;
+  font-weight: 950;
+  opacity: .88;
+}
+
+/* leader */
+.mLeader{
+  filter: drop-shadow(0 0 16px rgba(0, 255, 170, .42));
+}
+
+.mLeaderScore{
+  color: #effff7;
+  text-shadow:
+    0 0 10px rgba(0,255,140,.55),
+    0 0 24px rgba(0,255,170,.42),
+    0 0 40px rgba(0,180,255,.26);
+}
+
+/* layout */
+.mGrid{
+  display:grid;
+  grid-template-columns: 1fr 1.15fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.mCol{
+  min-height: 330px;
+  padding: 16px;
+  border-radius: 24px;
+
+  background: linear-gradient(135deg, rgba(0,45,125,.82), rgba(0,12,55,.82));
+  border: 2px solid rgba(0,210,255,.62);
+  box-shadow:
+    inset 0 0 24px rgba(0,170,255,.22),
+    0 0 22px rgba(0,160,255,.28);
+}
+
+.mColCenter{
+  min-height: 0;
+}
+
+.mColTitle{
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+
+  border-bottom: 1px solid rgba(120,225,255,.28);
+
+  color: rgba(190,240,255,.88);
+  font-size: 12px;
+  font-weight: 950;
+  letter-spacing: 1.4px;
+  text-align:center;
+}
+
+.mCenterTitle{
+  text-align:center;
+}
+
+/* rosters */
+.mRoster{
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  display:grid;
+  gap: 12px;
+}
+
+.mRoster li{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  padding: 14px 12px;
+  min-height: 56px;
+  border-radius: 16px;
+
+  background: rgba(0,0,0,.12);
+  border: 1px solid rgba(120,225,255,.20);
+}
+
+.mAvatar{
+  display:none;
+}
+
+.mName{
+  font-size: 22px;
+  font-weight: 850;
+  letter-spacing: .2px;
+  text-align:center;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mMuted{
+  opacity: .55;
+}
+
+/* match score list — без скролла, 9 строк помещаются */
+.mMatches{
+  display:grid;
+  gap: 7px;
+  overflow: visible;
+  max-height: none;
+  padding-right: 0;
+}
+
+.mMatchRow{
+  display:grid;
+  grid-template-columns: 42px 1fr 72px;
+  align-items:center;
+  gap: 8px;
+
+  min-height: 39px;
+  padding: 6px 9px;
+  border-radius: 13px;
+
+  background: linear-gradient(180deg, rgba(0,140,245,.78), rgba(0,62,170,.78));
+  border: 1px solid rgba(80,230,255,.62);
+  box-shadow:
+    inset 0 0 12px rgba(255,255,255,.11),
+    0 0 12px rgba(0,210,255,.24);
+}
+.mMatchRowLive{
+  border-color: rgba(90,255,150,.78);
+  box-shadow:
+    inset 0 0 12px rgba(255,255,255,.12),
+    0 0 14px rgba(0,255,140,.30);
+}
+
+.mMatchRowEmpty{
+  opacity: .58;
+}
+
+.mMatchIdx{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+
+  background: rgba(0,0,0,.20);
+  color: rgba(255,255,255,.82);
+
+  font-weight: 950;
+}
+
+.mMatchScore{
+  text-align:center;
+  font-size: 25px;
+  font-weight: 950;
+  letter-spacing: .5px;
+  color:#fff;
+}
+
+.mLive{
+  color: #6cff9c;
+  font-size: 13px;
+  font-weight: 950;
+  letter-spacing: .5px;
+  text-align:right;
+  text-shadow: 0 0 10px rgba(0,255,140,.55);
+}
+
+.mLive::before{
+  content:"";
+  display:inline-block;
+  width:8px;
+  height:8px;
+  margin-right:6px;
+  border-radius:999px;
+  background:#6cff9c;
+  box-shadow: 0 0 10px rgba(0,255,140,.8);
+}
+
+.mLiveSpacer{
+  width:72px;
+}
+
+.mEmpty{
+  text-align:center;
+  padding: 20px 12px;
+
+  border-radius: 18px;
+  border: 1px dashed rgba(120,225,255,.32);
+  background: rgba(0,0,0,.10);
+
+  color: rgba(255,255,255,.62);
+}
+
+.mStatus{
+  display:inline-flex;
+  margin-top: 12px;
+  padding: 8px 14px;
+
+  border-radius: 999px;
+  background: rgba(0,18,70,.76);
+  border: 1px solid rgba(0,205,255,.42);
+
+  color: rgba(220,245,255,.84);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+/* mobile */
+@media (max-width: 980px){
+  .mHeader{
+    grid-template-columns: 1fr;
+  }
+
+  .mScoreBoard{
+    min-width: auto;
+  }
+
+  .mScoreNum{
+    font-size: 84px;
+  }
+
+  .mScoreSep{
+    font-size: 42px;
+  }
+
+  .mGrid{
+    grid-template-columns: 1fr;
+  }
+
+  .mCol,
+  .mColCenter{
+    min-height:auto;
+  }
+}
+/* ===================== HUD SPORT STYLE ===================== */
+.hudSport{
+  gap: 10px;
+  padding: 18px;
+  --bgPad: 18px;
+  border-radius: 22px;
+  filter: drop-shadow(0 0 18px rgba(0, 178, 255, .55));
+  transform: scale(1.0);
+}
+
+.hudSport::before{
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(0,70,180,.95), rgba(0,18,70,.95));
+  border: 2px solid rgba(0,210,255,.85);
+  box-shadow:
+    inset 0 0 24px rgba(0,180,255,.35),
+    0 0 22px rgba(0,180,255,.45);
+}
+
+.hudSportHeader{
+  display: grid;
+  grid-template-columns: 22px minmax(260px, 1fr) 170px 170px;
+  gap: 12px;
+  padding: 0 10px 2px;
+}
+
+.hudSportLabel{
+  text-align: center;
+  color: rgba(255,255,255,.78);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+}
+
+.hudSportRow{
+  display: grid;
+  grid-template-columns: 22px minmax(260px, 1fr) 170px 170px;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: rgba(0,20,80,.72);
+  border: 1px solid rgba(0,205,255,.45);
+  box-shadow: inset 0 0 18px rgba(0,170,255,.24);
+}
+
+.hudSportTeam{
+  color: #fff;
+  font-size: 28px;
+  font-weight: 950;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hudSportCurrent{
+  height: 58px;
+  border-radius: 16px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color: #fff;
+  font-size: 40px;
+  font-weight: 950;
+  background: linear-gradient(180deg, rgba(0,150,255,.95), rgba(0,70,190,.95));
+  border: 2px solid rgba(80,230,255,.95);
+  box-shadow:
+    inset 0 0 18px rgba(255,255,255,.18),
+    0 0 18px rgba(0,210,255,.75);
+}
+
+.hudSportTotal{
+  height: 58px;
+  border-radius: 16px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color: rgba(255,255,255,.78);
+  font-size: 36px;
+  font-weight: 950;
+  background: rgba(0,0,0,.12);
+  border-left: 1px solid rgba(120,220,255,.45);
+}
+
+.serveDot{
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 0 12px rgba(255,255,255,.95);
+  opacity: 0;
+  transition: opacity .15s ease;
+  justify-self: center;
+}
+
+.serveDot.show{
+  opacity: 1;
+}
+
+.hudSportMeta{
+  align-self: flex-start;
+  margin-top: 4px;
+  padding: 10px 16px;
+  border-radius: 16px;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 900;
+  background: rgba(0,18,70,.92);
+  border: 1px solid rgba(0,205,255,.45);
+  box-shadow: 0 0 14px rgba(0,140,255,.28);
+}
+
+.bonusBtn{
+  margin-top: 8px;
+  width: 100%;
+  border-color: rgba(0, 200, 255, .55);
+  background: rgba(0, 120, 255, .18);
+  color: #f3f3f3;
+}
+
+.bonusBtn:hover{
+  background: rgba(0, 150, 255, .28);
+}
+
+/* ===================== TENNIS PANEL (admin) ===================== */
+.tennisScorePanel{
+  display: grid;
+  grid-template-columns: 1fr 60px 1fr;
+  gap: 10px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(0,0,0,.18);
+  border: 1px solid rgba(255,255,255,.08);
+}
+
+.tennisTeamCol{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.tennisTeamName{
+  font-weight: 800;
+  font-size: 14px;
+  opacity: .9;
+  text-align: center;
+}
+
+.tennisPointDisplay{
+  font-size: 42px;
+  font-weight: 950;
+  color: #fff;
+  letter-spacing: .5px;
+  min-width: 80px;
+  text-align: center;
+  line-height: 1;
+}
+
+.tennisGamesDisplay{
+  font-size: 12px;
+  opacity: .75;
+}
+
+.tennisVs{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 900;
+  opacity: .55;
+}
+
+/* ===================== HUD TENNIS MODE ===================== */
+.hudTennis{
+  gap: 8px;
+}
+
+.hudTennisRow{
+  display: grid;
+  grid-template-columns: 22px minmax(200px, 1fr) 110px 90px;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: 18px;
+  background: rgba(0,20,80,.72);
+  border: 1px solid rgba(0,205,255,.45);
+  box-shadow: inset 0 0 18px rgba(0,170,255,.24);
+}
+
+.hudTennisPoint{
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 28px;
+  font-weight: 950;
+  background: linear-gradient(180deg, rgba(0,150,255,.95), rgba(0,70,190,.95));
+  border: 2px solid rgba(80,230,255,.95);
+  box-shadow:
+    inset 0 0 14px rgba(255,255,255,.18),
+    0 0 14px rgba(0,210,255,.65);
+  letter-spacing: .3px;
+}
+
+.hudTennisGames{
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,.78);
+  font-size: 30px;
+  font-weight: 950;
+  background: rgba(0,0,0,.12);
+  border-left: 1px solid rgba(120,220,255,.45);
+}
+
+.hudTennisHeader{
+  display: grid;
+  grid-template-columns: 22px minmax(200px, 1fr) 110px 90px;
+  gap: 10px;
+  padding: 0 10px 2px;
+}
+
+.hudTennisDeuce{
+  grid-column: 1 / -1;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 900;
+  color: #ffd60a;
+  text-shadow: 0 0 10px rgba(255,210,0,.55);
+  letter-spacing: .8px;
+  padding: 4px 0 2px;
+}
