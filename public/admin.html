@@ -39,9 +39,17 @@
     .tennisServeBtn.active { background:rgba(0,150,255,.28);border-color:rgba(0,210,255,.7);color:#80d8ff; }
     .tennisServeNone.active { background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.3);color:#ccc; }
 
-    /* Serve dot in tennis panel */
-    .tennisServeDot { width:12px;height:12px;border-radius:50%;background:#fff;box-shadow:0 0 8px rgba(255,255,255,.9);opacity:0;transition:opacity .15s;display:inline-block;margin-right:6px;vertical-align:middle;flex-shrink:0; }
+    /* Serve dot */
+    .tennisServeDot { width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff 0%,#c8e6c9 40%,#81c784 100%);box-shadow:0 0 8px rgba(200,255,200,.9);opacity:0;transition:opacity .15s;display:inline-block;flex-shrink:0; }
     .tennisServeDot.show { opacity:1; }
+
+    /* Tennis scoreboard grid */
+    .tennisScorePanel { display:grid;grid-template-columns:1fr 80px 1fr;gap:10px;align-items:center;padding:16px;border-radius:16px;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.08); }
+    .tennisTeamCol { display:flex;flex-direction:column;align-items:center; }
+    .tennisTeamName { font-weight:800;font-size:15px;opacity:.92;text-align:center; }
+    .tennisPointDisplay { font-size:52px;font-weight:950;color:#fff;line-height:1;text-align:center;text-shadow:0 0 20px rgba(0,190,255,.5);margin:4px 0; }
+    .tennisGamesDisplay { font-size:13px;opacity:.72; }
+    .tennisVs { display:flex;align-items:center;justify-content:center; }
 
     /* Judge link */
     .judgeLink { display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;background:rgba(0,150,255,.18);border:1px solid rgba(0,200,255,.45);color:#80d8ff;font-weight:700;font-size:13px;text-decoration:none;margin-top:10px; }
@@ -227,35 +235,40 @@
 
         <!-- Tennis scoreboard -->
         <div class="tennisScorePanel" style="margin-top:14px;">
+
+          <!-- Team A -->
           <div class="tennisTeamCol">
-            <div style="display:flex;align-items:center;justify-content:center;gap:6px;">
+            <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:6px;">
               <span class="tennisServeDot" id="scoreDotA"></span>
               <div class="tennisTeamName" id="tennisTeamLabelA">Команда A</div>
             </div>
             <div class="tennisPointDisplay" id="tennisPointA">0</div>
-            <div class="tennisGamesDisplay">Геймы: <span id="tennisGamesA">0</span></div>
-            <div style="display:flex;gap:8px;margin-top:8px;justify-content:center;">
-              <button class="btn compact" id="tennisAMinus">−</button>
-              <button class="btn compact" id="tennisAPlus">+</button>
+            <div class="tennisGamesDisplay" style="margin-top:6px;">Геймы: <span id="tennisGamesA">0</span></div>
+            <div style="display:flex;gap:10px;margin-top:12px;justify-content:center;">
+              <button class="btn" style="width:64px;height:52px;font-size:26px;border-radius:14px;" id="tennisAMinus">−</button>
+              <button class="btn" style="width:64px;height:52px;font-size:26px;border-radius:14px;background:rgba(0,150,255,.2);border-color:rgba(0,200,255,.5);" id="tennisAPlus">+</button>
             </div>
           </div>
 
+          <!-- Center -->
           <div class="tennisVs">
-            <div id="tennisDeuceLabel" style="font-size:13px;font-weight:900;opacity:.85;text-align:center;min-height:20px;"></div>
+            <div id="tennisDeuceLabel" style="font-size:14px;font-weight:900;opacity:.9;text-align:center;color:#ffd60a;text-shadow:0 0 10px rgba(255,210,0,.55);min-height:20px;"></div>
           </div>
 
+          <!-- Team B -->
           <div class="tennisTeamCol">
-            <div style="display:flex;align-items:center;justify-content:center;gap:6px;">
+            <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:6px;">
               <span class="tennisServeDot" id="scoreDotB"></span>
               <div class="tennisTeamName" id="tennisTeamLabelB">Команда B</div>
             </div>
             <div class="tennisPointDisplay" id="tennisPointB">0</div>
-            <div class="tennisGamesDisplay">Геймы: <span id="tennisGamesB">0</span></div>
-            <div style="display:flex;gap:8px;margin-top:8px;justify-content:center;">
-              <button class="btn compact" id="tennisBMinus">−</button>
-              <button class="btn compact" id="tennisBPlus">+</button>
+            <div class="tennisGamesDisplay" style="margin-top:6px;">Геймы: <span id="tennisGamesB">0</span></div>
+            <div style="display:flex;gap:10px;margin-top:12px;justify-content:center;">
+              <button class="btn" style="width:64px;height:52px;font-size:26px;border-radius:14px;" id="tennisBMinus">−</button>
+              <button class="btn" style="width:64px;height:52px;font-size:26px;border-radius:14px;background:rgba(0,150,255,.2);border-color:rgba(0,200,255,.5);" id="tennisBPlus">+</button>
             </div>
           </div>
+
         </div>
 
         <div class="rowBtns" style="margin-top:12px;">
