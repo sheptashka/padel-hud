@@ -961,15 +961,3 @@ body.match{
 .bonusBtn:hover{
   background: rgba(0, 150, 255, .28);
 }
-/* Tennis ball serve dot on HUD */
-.serveDot {
-  width: 14px;
-  height: 14px;
-  border-radius: 999px;
-  background: radial-gradient(circle at 35% 35%, #fff 0%, #c8e6c9 40%, #81c784 100%);
-  box-shadow: 0 0 10px rgba(200,255,200,.9), 0 0 4px rgba(255,255,255,.7);
-  opacity: 0;
-  transition: opacity .15s ease;
-  justify-self: center;
-}
-.serveDot.show { opacity: 1; }
