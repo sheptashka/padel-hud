@@ -49,6 +49,14 @@
         </div>
 
         <div>
+          <label>Режим счёта</label>
+          <select id="scoreMode">
+            <option value="tournament">Турнирный (0 → N очков)</option>
+            <option value="tennis">Теннисный (0-15-30-40, геймы)</option>
+          </select>
+        </div>
+
+        <div>
           <label>Турнирный счёт: до скольки (N)</label>
           <input id="maxPoints" type="number" min="1" step="1" value="11" />
           <div class="hint">Ограничение: A + B не может быть больше N</div>
@@ -144,6 +152,52 @@
       <div class="rowBtns">
         <button class="primary" id="apply">Применить</button>
         <button class="danger" id="reset">Сбросить счет</button>
+      </div>
+
+      <!-- Tennis mode panel -->
+      <div id="tennisPanelWrap" style="display:none; margin-top:14px;">
+        <div class="card">
+          <h2 style="margin:0 0 10px; font-size:16px;">Теннисный режим</h2>
+          <div class="grid2">
+            <div>
+              <label>Геймов до победы</label>
+              <input id="tennisMaxGames" type="number" min="1" step="1" value="6" />
+            </div>
+            <div style="display:flex; flex-direction:column; justify-content:flex-end;">
+              <div class="hint">Текущий счёт в гейме и геймы отображаются на HUD</div>
+            </div>
+          </div>
+
+          <div class="tennisScorePanel" style="margin-top:14px;">
+            <div class="tennisTeamCol">
+              <div class="tennisTeamName" id="tennisTeamLabelA">Команда A</div>
+              <div class="tennisPointDisplay" id="tennisPointA">0</div>
+              <div class="tennisGamesDisplay">Геймы: <span id="tennisGamesA">0</span></div>
+              <div style="display:flex; gap:8px; margin-top:8px;">
+                <button class="btn compact" id="tennisAPlus">+</button>
+                <button class="btn compact" id="tennisAMinus">−</button>
+              </div>
+            </div>
+
+            <div class="tennisVs">
+              <div id="tennisDeuceLabel" style="font-size:13px; font-weight:900; opacity:.85; text-align:center; min-height:20px;"></div>
+            </div>
+
+            <div class="tennisTeamCol">
+              <div class="tennisTeamName" id="tennisTeamLabelB">Команда B</div>
+              <div class="tennisPointDisplay" id="tennisPointB">0</div>
+              <div class="tennisGamesDisplay">Геймы: <span id="tennisGamesB">0</span></div>
+              <div style="display:flex; gap:8px; margin-top:8px;">
+                <button class="btn compact" id="tennisBPlus">+</button>
+                <button class="btn compact" id="tennisBMinus">−</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="rowBtns" style="margin-top:12px;">
+            <button class="danger" id="tennisReset">Сбросить теннисный счёт</button>
+          </div>
+        </div>
       </div>
 
       <div class="card" style="margin-top:14px;">
