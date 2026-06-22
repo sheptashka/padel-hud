@@ -246,6 +246,7 @@ function buildPatchFromUI({ touchUpdatedAt } = { touchUpdatedAt: true }) {
     tennisDeuce: ts.tennisDeuce ?? false,
     tennisAdvA: ts.tennisAdvA ?? false,
     tennisAdvB: ts.tennisAdvB ?? false,
+    tennisFirstServer: ts.tennisFirstServer ?? "",
     matchCount,
   };
 }
@@ -351,6 +352,7 @@ window.__tennisState = {
   tennisPointsA: 0, tennisPointsB: 0,
   tennisGamesA: 0, tennisGamesB: 0,
   tennisDeuce: false, tennisAdvA: false, tennisAdvB: false,
+  tennisFirstServer: "", // "A" | "B" | ""
 };
 
 // Snapshot for undo on "No" in game-win modal
@@ -383,6 +385,17 @@ function updateTennisUI() {
   const teamB = safeStr($("teamB")?.value) || "Команда B";
   if (elLA) elLA.textContent = teamA;
   if (elLB) elLB.textContent = teamB;
+
+  // Update serve labels and active state
+  const slA = $("tennisServeLabelA"); const slB = $("tennisServeLabelB");
+  if (slA) slA.textContent = teamA;
+  if (slB) slB.textContent = teamB;
+
+  const sA = $("tennisServeA"); const sB = $("tennisServeB"); const sN = $("tennisServeNone");
+  const srv = ts.tennisFirstServer || "";
+  if (sA) sA.classList.toggle("active", srv === "A");
+  if (sB) sB.classList.toggle("active", srv === "B");
+  if (sN) sN.classList.toggle("active", srv === "");
 }
 
 function loadTennisState(s) {
@@ -394,6 +407,7 @@ function loadTennisState(s) {
     tennisDeuce: !!s?.tennisDeuce,
     tennisAdvA: !!s?.tennisAdvA,
     tennisAdvB: !!s?.tennisAdvB,
+    tennisFirstServer: s?.tennisFirstServer === "A" || s?.tennisFirstServer === "B" ? s.tennisFirstServer : "",
   };
 }
 
@@ -428,8 +442,7 @@ function showGameWinModal(winner, onConfirm, onCancel) {
 }
 
 // Show match-win modal
-function showMatchWinModal(winner) {
-  const maxG = clamp(Number($("tennisMaxGames")?.value ?? 6), 1, 99);
+function showMatchWinModal(winner, snapshotBeforeGame) {
   const ts = window.__tennisState;
   const teamA = safeStr($("teamA")?.value) || "Команда A";
   const teamB = safeStr($("teamB")?.value) || "Команда B";
@@ -455,7 +468,6 @@ function showMatchWinModal(winner) {
   saveBtn.onclick = () => {
     cleanup();
     saveMatchToTable(scoreStr);
-    // Reset tennis score after saving
     window.__tennisState = {
       tennisPointsA: 0, tennisPointsB: 0,
       tennisGamesA: 0, tennisGamesB: 0,
@@ -465,20 +477,28 @@ function showMatchWinModal(winner) {
     emitAll();
   };
 
-  cancelBtn.onclick = () => { cleanup(); };
+  cancelBtn.onclick = () => {
+    cleanup();
+    // Restore full state before the last game point was scored
+    if (snapshotBeforeGame) {
+      window.__tennisState = snapshotBeforeGame;
+      updateTennisUI();
+      emitAll();
+    }
+  };
 }
 
-function checkMatchWin(winner) {
+function checkMatchWin(winner, snapshotBeforeGame) {
   const maxG = clamp(Number($("tennisMaxGames")?.value ?? 6), 1, 99);
   const ts = window.__tennisState;
   const gA = ts.tennisGamesA;
   const gB = ts.tennisGamesB;
   if (gA + gB >= maxG) {
-    showMatchWinModal(gA > gB ? "A" : "B");
+    showMatchWinModal(gA > gB ? "A" : "B", snapshotBeforeGame);
   }
 }
 
-function doWinGame(winner) {
+function doWinGame(winner, snapshotBeforeGame) {
   const ts = window.__tennisState;
   if (winner === "A") ts.tennisGamesA += 1;
   else ts.tennisGamesB += 1;
@@ -486,7 +506,7 @@ function doWinGame(winner) {
   ts.tennisDeuce = false; ts.tennisAdvA = false; ts.tennisAdvB = false;
   updateTennisUI();
   emitAll();
-  checkMatchWin(winner);
+  checkMatchWin(winner, snapshotBeforeGame);
 }
 
 function tennisScorePoint(winner) {
@@ -495,10 +515,9 @@ function tennisScorePoint(winner) {
   if (ts.tennisDeuce) {
     if (ts.tennisAdvA || ts.tennisAdvB) {
       if ((winner === "A" && ts.tennisAdvA) || (winner === "B" && ts.tennisAdvB)) {
-        // Would win game — ask confirmation BEFORE any mutation
         const snapshot = snapshotTennis();
         showGameWinModal(winner,
-          () => { doWinGame(winner); },
+          () => { doWinGame(winner, snapshot); },
           () => { window.__tennisState = snapshot; updateTennisUI(); emitAll(); }
         );
         return;
@@ -526,7 +545,7 @@ function tennisScorePoint(winner) {
   if (ts.tennisPointsA >= 4 || ts.tennisPointsB >= 4) {
     const w = ts.tennisPointsA >= 4 ? "A" : "B";
     showGameWinModal(w,
-      () => { doWinGame(w); },
+      () => { doWinGame(w, snapshot); },
       () => { window.__tennisState = snapshot; updateTennisUI(); emitAll(); }
     );
     return;
@@ -557,6 +576,7 @@ function tennisResetAll() {
     tennisPointsA: 0, tennisPointsB: 0,
     tennisGamesA: 0, tennisGamesB: 0,
     tennisDeuce: false, tennisAdvA: false, tennisAdvB: false,
+    tennisFirstServer: "",
   };
   updateTennisUI(); emitAll();
 }
@@ -645,6 +665,9 @@ if ($("tennisAMinus")) $("tennisAMinus").addEventListener("click", () => tennisR
 if ($("tennisBPlus")) $("tennisBPlus").addEventListener("click", () => tennisScorePoint("B"));
 if ($("tennisBMinus")) $("tennisBMinus").addEventListener("click", () => tennisRemovePoint("B"));
 if ($("tennisReset")) $("tennisReset").addEventListener("click", tennisResetAll);
+if ($("tennisServeA")) $("tennisServeA").addEventListener("click", () => { window.__tennisState.tennisFirstServer = "A"; updateTennisUI(); emitAll(); });
+if ($("tennisServeB")) $("tennisServeB").addEventListener("click", () => { window.__tennisState.tennisFirstServer = "B"; updateTennisUI(); emitAll(); });
+if ($("tennisServeNone")) $("tennisServeNone").addEventListener("click", () => { window.__tennisState.tennisFirstServer = ""; updateTennisUI(); emitAll(); });
 
 // Match count controls
 if ($("matchCount")) {
