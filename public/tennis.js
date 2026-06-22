@@ -81,18 +81,13 @@ function showMatchWinModal(snapshotBeforeGame) {
 
   saveBtn.onclick = () => {
     cleanup();
-    // Emit save to server — server-side match table save handled by admin
+    // Ask admin.js to write match to table via special event
+    socket.emit("saveTennisMatch", { score: scoreStr });
+    // Reset tennis state
     const savedSrv = ts.tennisFirstServer;
-    socket.emit("setState", {
-      ...buildPatch(),
-      tennisPointsA: 0, tennisPointsB: 0,
-      tennisGamesA: 0, tennisGamesB: 0,
-      tennisDeuce: false, tennisAdvA: false, tennisAdvB: false,
-      tennisFirstServer: savedSrv,
-      updatedAt: Date.now(),
-    });
     ts = { tennisPointsA:0, tennisPointsB:0, tennisGamesA:0, tennisGamesB:0, tennisDeuce:false, tennisAdvA:false, tennisAdvB:false, tennisFirstServer: savedSrv };
     updateUI();
+    socket.emit("setState", { ...buildPatch(), tennisPointsA:0, tennisPointsB:0, tennisGamesA:0, tennisGamesB:0, tennisDeuce:false, tennisAdvA:false, tennisAdvB:false, tennisFirstServer: savedSrv, updatedAt: Date.now() });
   };
 
   cancelBtn.onclick = () => {
