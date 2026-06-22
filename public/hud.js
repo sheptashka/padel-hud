@@ -118,7 +118,7 @@ function applyTennisState(s) {
   const elTA = $("tennisTeamA"); const elTB = $("tennisTeamB");
   const elPA = $("tennisHudPointA"); const elPB = $("tennisHudPointB");
   const elGA = $("tennisHudGamesA"); const elGB = $("tennisHudGamesB");
-  const elDeuce = $("hudTennisDeuce");
+  const elTotA = $("tennisHudTotalA"); const elTotB = $("tennisHudTotalB");
   const elSA = $("serveAT"); const elSB = $("serveBT");
 
   if (elTA) elTA.textContent = s.teamA ?? "TEAM A";
@@ -127,13 +127,25 @@ function applyTennisState(s) {
   if (elPB) elPB.textContent = tennisHudPointLabel(s, "B");
   if (elGA) elGA.textContent = String(s.tennisGamesA ?? 0);
   if (elGB) elGB.textContent = String(s.tennisGamesB ?? 0);
-  if (elDeuce) elDeuce.style.display = (!!s.tennisDeuce && !s.tennisAdvA && !s.tennisAdvB) ? "block" : "none";
 
-  // Serve dot: switches every game from tennisFirstServer
+  // Total score: sum all played matches + current games in real time
+  let totA = 0; let totB = 0;
+  if (Array.isArray(s.matches)) {
+    s.matches.forEach((m) => {
+      const sc = parseScore(m?.score);
+      if (!sc) return;
+      totA += sc.a; totB += sc.b;
+    });
+  }
+  totA += Number(s.tennisGamesA ?? 0);
+  totB += Number(s.tennisGamesB ?? 0);
+  if (elTotA) elTotA.textContent = String(totA);
+  if (elTotB) elTotB.textContent = String(totB);
+
+  // Serve dot: switches every game
   const srv = s.tennisFirstServer === "A" || s.tennisFirstServer === "B" ? s.tennisFirstServer : "";
   if (srv) {
     const totalGames = Number(s.tennisGamesA ?? 0) + Number(s.tennisGamesB ?? 0);
-    // switch every game
     const currentServer = (totalGames % 2 === 0) ? srv : (srv === "A" ? "B" : "A");
     if (elSA) elSA.classList.toggle("show", currentServer === "A");
     if (elSB) elSB.classList.toggle("show", currentServer === "B");
