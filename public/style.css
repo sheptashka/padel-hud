@@ -961,3 +961,118 @@ body.match{
 .bonusBtn:hover{
   background: rgba(0, 150, 255, .28);
 }
+
+/* ===================== TENNIS PANEL (admin) ===================== */
+.tennisScorePanel{
+  display: grid;
+  grid-template-columns: 1fr 60px 1fr;
+  gap: 10px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(0,0,0,.18);
+  border: 1px solid rgba(255,255,255,.08);
+}
+
+.tennisTeamCol{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.tennisTeamName{
+  font-weight: 800;
+  font-size: 14px;
+  opacity: .9;
+  text-align: center;
+}
+
+.tennisPointDisplay{
+  font-size: 42px;
+  font-weight: 950;
+  color: #fff;
+  letter-spacing: .5px;
+  min-width: 80px;
+  text-align: center;
+  line-height: 1;
+}
+
+.tennisGamesDisplay{
+  font-size: 12px;
+  opacity: .75;
+}
+
+.tennisVs{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 900;
+  opacity: .55;
+}
+
+/* ===================== HUD TENNIS MODE ===================== */
+.hudTennis{
+  gap: 8px;
+}
+
+.hudTennisRow{
+  display: grid;
+  grid-template-columns: 22px minmax(200px, 1fr) 110px 90px;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: 18px;
+  background: rgba(0,20,80,.72);
+  border: 1px solid rgba(0,205,255,.45);
+  box-shadow: inset 0 0 18px rgba(0,170,255,.24);
+}
+
+.hudTennisPoint{
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 28px;
+  font-weight: 950;
+  background: linear-gradient(180deg, rgba(0,150,255,.95), rgba(0,70,190,.95));
+  border: 2px solid rgba(80,230,255,.95);
+  box-shadow:
+    inset 0 0 14px rgba(255,255,255,.18),
+    0 0 14px rgba(0,210,255,.65);
+  letter-spacing: .3px;
+}
+
+.hudTennisGames{
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,.78);
+  font-size: 30px;
+  font-weight: 950;
+  background: rgba(0,0,0,.12);
+  border-left: 1px solid rgba(120,220,255,.45);
+}
+
+.hudTennisHeader{
+  display: grid;
+  grid-template-columns: 22px minmax(200px, 1fr) 110px 90px;
+  gap: 10px;
+  padding: 0 10px 2px;
+}
+
+.hudTennisDeuce{
+  grid-column: 1 / -1;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 900;
+  color: #ffd60a;
+  text-shadow: 0 0 10px rgba(255,210,0,.55);
+  letter-spacing: .8px;
+  padding: 4px 0 2px;
+}
