@@ -27,6 +27,8 @@ const DEFAULT_STATE = {
   matches: EMPTY_MATCHES(),
   updatedAt: Date.now(),
   serveRallies: 0,
+  court2ColorA: "", // "white" | "black" | ""
+  court2ColorB: "", // "white" | "black" | ""
 };
 
 let state = { ...DEFAULT_STATE };
@@ -68,6 +70,10 @@ function sanitizeFirstServer(value) {
   return value === "A" || value === "B" ? value : "";
 }
 
+function sanitizeCourt2Color(value) {
+  return value === "white" || value === "black" ? value : "";
+}
+
 function sanitizePatch(patch) {
   const p = {};
 
@@ -107,6 +113,10 @@ function sanitizePatch(patch) {
   if (patch.tennisAdvA !== undefined) p.tennisAdvA = !!patch.tennisAdvA;
   if (patch.tennisAdvB !== undefined) p.tennisAdvB = !!patch.tennisAdvB;
   if (patch.tennisFirstServer !== undefined) p.tennisFirstServer = (patch.tennisFirstServer === "A" || patch.tennisFirstServer === "B") ? patch.tennisFirstServer : "";
+
+  // Court 2 (referee screen)
+  if (patch.court2ColorA !== undefined) p.court2ColorA = sanitizeCourt2Color(patch.court2ColorA);
+  if (patch.court2ColorB !== undefined) p.court2ColorB = sanitizeCourt2Color(patch.court2ColorB);
 
   return p;
 }
@@ -172,6 +182,31 @@ io.on("connection", (socket) => {
       ...matches[idx],
       a: teamA + " (Главный корт)",
       b: teamB + " (судья)",
+      score,
+    };
+
+    state = { ...state, matches, updatedAt: Date.now() };
+    io.emit("state", state);
+  });
+
+  socket.on("saveCourt2Match", (data) => {
+    if (!isObj(data)) return;
+
+    const scoreA = clampInt(data.scoreA, 0, 999);
+    const scoreB = clampInt(data.scoreB, 0, 999);
+    const score = `${scoreA}:${scoreB}`;
+
+    const matches = Array.isArray(state.matches) ? [...state.matches] : [];
+    const idx = matches.findIndex((m) => !String(m?.score || "").trim());
+    if (idx === -1) return; // no empty row
+
+    const teamA = String(state.teamA || "Команда A").trim();
+    const teamB = String(state.teamB || "Команда B").trim();
+
+    matches[idx] = {
+      ...matches[idx],
+      a: teamA,
+      b: `${teamB} (Корт 2)`,
       score,
     };
 
