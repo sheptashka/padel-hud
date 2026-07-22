@@ -29,6 +29,7 @@ const DEFAULT_STATE = {
   serveRallies: 0,
   court2ColorA: "", // "white" | "black" | ""
   court2ColorB: "", // "white" | "black" | ""
+  goldenPointMode: false,
 };
 
 let state = { ...DEFAULT_STATE };
@@ -117,6 +118,8 @@ function sanitizePatch(patch) {
   // Court 2 (referee screen)
   if (patch.court2ColorA !== undefined) p.court2ColorA = sanitizeCourt2Color(patch.court2ColorA);
   if (patch.court2ColorB !== undefined) p.court2ColorB = sanitizeCourt2Color(patch.court2ColorB);
+
+  if (patch.goldenPointMode !== undefined) p.goldenPointMode = !!patch.goldenPointMode;
 
   return p;
 }
