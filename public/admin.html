@@ -54,6 +54,28 @@
     /* Judge link */
     .judgeLink { display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;background:rgba(0,150,255,.18);border:1px solid rgba(0,200,255,.45);color:#80d8ff;font-weight:700;font-size:13px;text-decoration:none;margin-top:10px; }
     .judgeLink:hover { background:rgba(0,150,255,.28); }
+
+    /* Golden point bars */
+    .goldenBar {
+      margin-top: 12px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(180,140,0,.28), rgba(90,70,0,.28));
+      border: 1px solid rgba(255,210,0,.5);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .goldenBarLabel {
+      font-weight: 800;
+      font-size: 14px;
+      color: #ffd60a;
+      text-shadow: 0 0 10px rgba(255,210,0,.4);
+    }
+    .goldenBarBtns { display: flex; gap: 10px; flex-wrap: wrap; }
+    .goldenBarBtns button { min-width: 130px; }
   </style>
 </head>
 <body class="admin">
@@ -167,6 +189,10 @@
 
     <!-- TOURNAMENT block -->
     <div id="tournamentBlock">
+      <div class="serveStartWrap" style="justify-content:flex-start;margin-bottom:10px;">
+        <label class="serveStart"><input type="checkbox" id="goldenPointMode" />Режим «Золотой мяч»</label>
+      </div>
+
       <div class="teamsPanel compact">
         <div>
           <div class="teamRow compact">
@@ -199,6 +225,25 @@
           <button class="bonusBtn" id="bBonus" type="button">+2 бонусный мяч</button>
         </div>
       </div>
+
+      <!-- Golden point: step 1 — confirm or cancel the point just scored -->
+      <div class="goldenBar" id="goldenBar" style="display:none;">
+        <div class="goldenBarLabel">Засчитать очко?</div>
+        <div class="goldenBarBtns">
+          <button class="modalBtnSave" id="goldenConfirmBtn" type="button">🏆 Золотой мяч</button>
+          <button class="modalBtnNo" id="goldenCancelBtn" type="button">Отмена</button>
+        </div>
+      </div>
+
+      <!-- Golden point: step 2 — who actually won -->
+      <div class="goldenBar" id="goldenWhoWonBar" style="display:none;">
+        <div class="goldenBarLabel">Кто выиграл?</div>
+        <div class="goldenBarBtns">
+          <button class="modalBtnSave" id="goldenWinA" type="button" data-team="A">Команда A</button>
+          <button class="modalBtnSave" id="goldenWinB" type="button" data-team="B">Команда B</button>
+        </div>
+      </div>
+
       <div class="rowBtns">
         <button class="primary" id="apply">Применить</button>
         <button class="danger" id="reset">Сбросить счет</button>
