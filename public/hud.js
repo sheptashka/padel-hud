@@ -106,8 +106,8 @@ function tennisHudPointLabel(s, team) {
   const advA = !!s.tennisAdvA;
   const advB = !!s.tennisAdvB;
   if (deuce) {
-    if (team === "A" && advA) return "Ad";
-    if (team === "B" && advB) return "Ad";
+    if (team === "A" && advA) return "AD";
+    if (team === "B" && advB) return "AD";
     return "40";
   }
   const pts = team === "A" ? Number(s.tennisPointsA ?? 0) : Number(s.tennisPointsB ?? 0);
