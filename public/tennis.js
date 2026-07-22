@@ -26,7 +26,7 @@ function getCurrentServer() {
 }
 
 function pointLabel(team) {
-  if (ts.tennisDeuce) { if (team === "A" && ts.tennisAdvA) return "Ad"; if (team === "B" && ts.tennisAdvB) return "Ad"; return "40"; }
+  if (ts.tennisDeuce) { if (team === "A" && ts.tennisAdvA) return "AD"; if (team === "B" && ts.tennisAdvB) return "AD"; return "40"; }
   const pts = team === "A" ? ts.tennisPointsA : ts.tennisPointsB;
   return TENNIS_LABELS[pts] ?? "0";
 }
