@@ -250,6 +250,7 @@ function buildPatchFromUI({ touchUpdatedAt } = { touchUpdatedAt: true }) {
     tennisAdvB: ts.tennisAdvB ?? false,
     tennisFirstServer: ts.tennisFirstServer ?? "",
     matchCount,
+    goldenPointMode: isGoldenPointModeOn(),
   };
 }
 
@@ -275,6 +276,9 @@ function fill(s) {
   if ($("b3")) $("b3").value = s.b3 ?? 0;
   syncFirstServerCheckboxes(s.firstServer);
   if ($("showHud")) $("showHud").checked = s.hudVisible ?? true;
+  if ($("goldenPointMode")) $("goldenPointMode").checked = !!s.goldenPointMode;
+  goldenPending = null;
+  hideGoldenBars();
 
   const scoreMode = s.scoreMode ?? "tournament";
   if ($("scoreMode")) $("scoreMode").value = scoreMode;
@@ -301,12 +305,69 @@ function fill(s) {
   updateTeamRowTitles();
 }
 
-function applyDelta(team, delta) {
+function applyDeltaRaw(team, delta) {
   const N = Number($("maxPoints")?.value ?? 11);
   const a = Number($("a3")?.value ?? 0); const b = Number($("b3")?.value ?? 0);
   if (team === "A") { const na = clamp(a + delta, 0, N); $("a3").value = na; $("b3").value = clamp(b, 0, N - na); }
   else { const nb = clamp(b + delta, 0, N); $("b3").value = nb; $("a3").value = clamp(a, 0, N - nb); }
   emitAll();
+  return { prevA: a, prevB: b };
+}
+
+let goldenPending = null; // { prevA, prevB } — score before the tentative point that's awaiting confirmation
+
+function isGoldenPointModeOn() {
+  return !!($("goldenPointMode") && $("goldenPointMode").checked);
+}
+
+function hideGoldenBars() {
+  if ($("goldenBar")) $("goldenBar").style.display = "none";
+  if ($("goldenWhoWonBar")) $("goldenWhoWonBar").style.display = "none";
+}
+
+function showGoldenConfirmBar() {
+  hideGoldenBars();
+  if ($("goldenBar")) $("goldenBar").style.display = "flex";
+}
+
+function showGoldenWhoWonBar() {
+  hideGoldenBars();
+  const teamA = safeStr($("teamA")?.value) || "Команда A";
+  const teamB = safeStr($("teamB")?.value) || "Команда B";
+  if ($("goldenWinA")) $("goldenWinA").textContent = teamA;
+  if ($("goldenWinB")) $("goldenWinB").textContent = teamB;
+  if ($("goldenWhoWonBar")) $("goldenWhoWonBar").style.display = "flex";
+}
+
+function goldenCancel() {
+  if (goldenPending) {
+    if ($("a3")) $("a3").value = goldenPending.prevA;
+    if ($("b3")) $("b3").value = goldenPending.prevB;
+    emitAll();
+  }
+  goldenPending = null;
+  hideGoldenBars();
+}
+
+function goldenPickWinner(team) {
+  if (goldenPending) {
+    if ($("a3")) $("a3").value = goldenPending.prevA;
+    if ($("b3")) $("b3").value = goldenPending.prevB;
+  }
+  goldenPending = null;
+  hideGoldenBars();
+  applyDeltaRaw(team, +1);
+}
+
+function applyDelta(team, delta) {
+  const prev = applyDeltaRaw(team, delta);
+  if (isGoldenPointModeOn()) {
+    goldenPending = prev;
+    showGoldenConfirmBar();
+  } else {
+    goldenPending = null;
+    hideGoldenBars();
+  }
 }
 
 function applyBonus(team) {
@@ -341,7 +402,7 @@ function getCurrentTennisServer(ts) {
 }
 
 function tennisPointLabel(ts, team) {
-  if (ts.tennisDeuce) { if (team === "A" && ts.tennisAdvA) return "Ad"; if (team === "B" && ts.tennisAdvB) return "Ad"; return "40"; }
+  if (ts.tennisDeuce) { if (team === "A" && ts.tennisAdvA) return "AD"; if (team === "B" && ts.tennisAdvB) return "AD"; return "40"; }
   const pts = team === "A" ? ts.tennisPointsA : ts.tennisPointsB;
   return TENNIS_LABELS[pts] ?? "0";
 }
@@ -529,6 +590,17 @@ if ($("bPlus")) $("bPlus").addEventListener("click", () => applyDelta("B", +1));
 if ($("bMinus")) $("bMinus").addEventListener("click", () => applyDelta("B", -1));
 if ($("aBonus")) $("aBonus").addEventListener("click", () => applyBonus("A"));
 if ($("bBonus")) $("bBonus").addEventListener("click", () => applyBonus("B"));
+
+if ($("goldenPointMode")) $("goldenPointMode").addEventListener("change", () => {
+  goldenPending = null;
+  hideGoldenBars();
+  saveDraftOnly();
+  emitAll();
+});
+if ($("goldenCancelBtn")) $("goldenCancelBtn").addEventListener("click", goldenCancel);
+if ($("goldenConfirmBtn")) $("goldenConfirmBtn").addEventListener("click", showGoldenWhoWonBar);
+if ($("goldenWinA")) $("goldenWinA").addEventListener("click", () => goldenPickWinner("A"));
+if ($("goldenWinB")) $("goldenWinB").addEventListener("click", () => goldenPickWinner("B"));
 if ($("firstServerA")) $("firstServerA").addEventListener("change", () => toggleFirstServer("A"));
 if ($("firstServerB")) $("firstServerB").addEventListener("change", () => toggleFirstServer("B"));
 if ($("scoreMode")) $("scoreMode").addEventListener("change", () => { updateScoreModeUI($("scoreMode").value); emitAll(); });
