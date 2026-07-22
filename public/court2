@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+  <title>Судья — Второй корт</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0b0d12;
+      color: #f3f3f3;
+      font-family: system-ui, -apple-system, sans-serif;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* Modal */
+    .modalOverlay { display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:100;align-items:center;justify-content:center; }
+    .modalOverlay.show { display:flex; }
+    .modalBox { background:#1a1d24;border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:28px 20px 20px;max-width:340px;width:92%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.6); }
+    .modalTitle { font-size:19px;font-weight:800;margin-bottom:10px; }
+    .modalSub { font-size:15px;opacity:.85;margin-bottom:22px;line-height:1.4; }
+    .modalBtns { display:flex;gap:10px;justify-content:center; }
+    .modalBtns button { flex:1;padding:14px 10px;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;border:1px solid transparent; }
+    .modalBtnYes { background:rgba(0,180,100,.25);border-color:rgba(0,220,120,.5);color:#6effb4; }
+    .modalBtnNo  { background:rgba(255,60,60,.18);border-color:rgba(255,90,90,.5);color:#ff8080; }
+
+    /* Header */
+    .header {
+      padding: 14px 16px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .header-title { font-size: 16px; font-weight: 800; opacity: .9; }
+
+    /* Body */
+    .body {
+      padding: 16px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      flex: 1;
+    }
+
+    .team-card {
+      border-radius: 20px;
+      padding: 16px;
+      background: rgba(0,20,80,.72);
+      border: 1px solid rgba(0,205,255,.35);
+      transition: background .15s, border-color .15s, color .15s;
+    }
+
+    .team-card.color-white {
+      background: #f2f2f2;
+      color: #111;
+      border-color: rgba(0,0,0,.18);
+    }
+
+    .team-card.color-black {
+      background: #050505;
+      color: #fff;
+      border-color: rgba(255,255,255,.25);
+    }
+
+    .team-name {
+      font-size: 20px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .3px;
+      margin-bottom: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .team-row-controls {
+      display: grid;
+      grid-template-columns: 1fr 96px;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .color-btns { display: flex; gap: 8px; }
+    .color-btn {
+      flex: 1;
+      padding: 10px 6px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.2);
+      background: rgba(255,255,255,.08);
+      color: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .color-btn .swatch {
+      width: 12px; height: 12px; border-radius: 50%;
+      border: 1px solid rgba(0,0,0,.35);
+      flex-shrink: 0;
+    }
+    .color-btn.white .swatch { background: #fff; }
+    .color-btn.black .swatch { background: #111; }
+    .color-btn.active.white { background: rgba(255,255,255,.9); color: #111; border-color: rgba(255,255,255,.95); }
+    .color-btn.active.black { background: rgba(0,0,0,.85); color: #fff; border-color: rgba(255,255,255,.4); }
+
+    .score-input {
+      width: 100%;
+      padding: 12px 10px;
+      border-radius: 12px;
+      border: 2px solid rgba(0,205,255,.5);
+      background: rgba(0,0,0,.28);
+      color: #fff;
+      font-size: 24px;
+      font-weight: 900;
+      text-align: center;
+      -moz-appearance: textfield;
+    }
+    .team-card.color-white .score-input,
+    .team-card.color-black .score-input {
+      background: rgba(0,150,255,.12);
+      color: inherit;
+    }
+    .score-input::-webkit-outer-spin-button,
+    .score-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+    .score-label { font-size: 11px; opacity: .7; text-align: center; margin-top: 6px; text-transform: uppercase; letter-spacing: .4px; }
+
+    .save-section { padding: 6px 14px 18px; }
+    .save-btn {
+      width: 100%;
+      padding: 18px;
+      border-radius: 18px;
+      border: 2px solid rgba(0,220,120,.55);
+      background: linear-gradient(135deg, rgba(0,140,80,.4), rgba(0,80,50,.4));
+      color: #6effb4;
+      font-size: 17px;
+      font-weight: 900;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .save-btn:active { background: linear-gradient(135deg, rgba(0,180,100,.55), rgba(0,110,65,.55)); }
+
+    .savedHint { text-align: center; margin-top: 10px; font-size: 13px; color: #6effb4; font-weight: 700; min-height: 18px; }
+
+    .bottom-row { padding: 0 14px 18px; }
+    .ctrl-btn {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: #f3f3f3;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Modal: confirm save -->
+<div class="modalOverlay" id="modalConfirm">
+  <div class="modalBox">
+    <div class="modalTitle">Сохранить итоговый счёт?</div>
+    <div class="modalSub" id="confirmText"></div>
+    <div class="modalBtns">
+      <button class="modalBtnYes" id="confirmYes">Да ✓</button>
+      <button class="modalBtnNo" id="confirmNo">Нет ✗</button>
+    </div>
+  </div>
+</div>
+
+<div class="header">
+  <div class="header-title">Судья — Второй корт</div>
+</div>
+
+<div class="body">
+  <div class="team-card" id="cardA">
+    <div class="team-name" id="teamNameA">Команда A</div>
+    <div class="team-row-controls">
+      <div class="color-btns">
+        <button class="color-btn white" id="colorAWhite"><span class="swatch"></span>Белый</button>
+        <button class="color-btn black" id="colorABlack"><span class="swatch"></span>Чёрный</button>
+      </div>
+      <input class="score-input" id="scoreA" type="number" min="0" step="1" inputmode="numeric" placeholder="0" />
+    </div>
+    <div class="score-label">Геймов выиграно</div>
+  </div>
+
+  <div class="team-card" id="cardB">
+    <div class="team-name" id="teamNameB">Команда B</div>
+    <div class="team-row-controls">
+      <div class="color-btns">
+        <button class="color-btn white" id="colorBWhite"><span class="swatch"></span>Белый</button>
+        <button class="color-btn black" id="colorBBlack"><span class="swatch"></span>Чёрный</button>
+      </div>
+      <input class="score-input" id="scoreB" type="number" min="0" step="1" inputmode="numeric" placeholder="0" />
+    </div>
+    <div class="score-label">Геймов выиграно</div>
+  </div>
+</div>
+
+<div class="save-section">
+  <button class="save-btn" id="btnSave">Сохранить итоговый счёт</button>
+  <div class="savedHint" id="savedHint"></div>
+</div>
+
+<div class="bottom-row">
+  <button class="ctrl-btn" id="btnBack">← Админка</button>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/court2.js"></script>
+</body>
+</html>
